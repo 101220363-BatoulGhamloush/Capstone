@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electronic Agreement - OpportuGrow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Times New Roman', Times, serif; /* Professional look */
+            padding-top: 50px;
+            padding-bottom: 50px;
+        }
+
+        .document-container {
+            max-width: 850px;
+            margin: auto;
+            background: white;
+            padding: 60px 80px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        /* The "Official" Watermark */
+        .document-container::before {
+            content: "OFFICIAL";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 100px;
+            color: rgba(0, 0, 0, 0.03);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .doc-title {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .section-title {
+            font-weight: bold;
+            text-decoration: underline;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: #34495e;
+        }
+
+        .contract-text {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            text-align: justify;
+            color: #333;
+            z-index: 1;
+            position: relative;
+        }
+
+        .signature-box {
+            margin-top: 50px;
+            border-top: 1px dashed #999;
+            padding-top: 20px;
+        }
+
+        .signature-line {
+            font-family: 'Dancing Script', cursive, serif; /* You can link a Google Font here */
+            font-size: 1.5rem;
+            color: #2980b9;
+            border-bottom: 1px solid #333;
+            display: inline-block;
+            min-width: 250px;
+        }
+
+        .action-bar {
+            max-width: 850px;
+            margin: 20px auto;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stamp {
+            position: absolute;
+            top: 60px;
+            right: 80px;
+            width: 120px;
+            height: 120px;
+            border: 4px double #e74c3c;
+            border-radius: 50%;
+            color: #e74c3c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            opacity: 0.6;
+            transform: rotate(15deg);
+        }
+
+        @media print {
+            .action-bar, .btn { display: none; }
+            body { background: white; padding: 0; }
+            .document-container { box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="document-container">
+        <div class="stamp" th:text="${project.type}">TYPE</div>
+
+        <div class="doc-header">
+            <h2 class="doc-title">OpportuGrow Platform Agreement</h2>
+            <p class="mb-0">Legal Instrument of Financial Commitment</p>
+        </div>
+
+        <div class="contract-text">
+            <p>This Agreement is entered into on this <strong th:text="${#dates.format(#dates.createNow(), 'dd MMMM yyyy')}"></strong>, by and between:</p>
+
+            <p><strong>The Party of the First Part (Participant):</strong> <span th:text="${investor.name}">User Name</span>, residing at <span th:text="${investor.email}">Email</span>.</p>
+
+            <p><strong>The Party of the Second Part (Project Creator):</strong> <span th:text="${project.owner.name}">Owner Name</span>, for the project titled "<strong><span th:text="${project.title}">Project Title</span></strong>".</p>
+
+            <hr>
+
+            <div th:if="${project.type.name() == 'LOAN'}">
+                <h4 class="section-title">1. LOAN DISBURSEMENT</h4>
+                <p>The Participant agrees to lend the principal sum of <strong>$<span th:text="${amount}">0.00</span></strong>. The Project Creator acknowledges the obligation to repay the full principal amount plus any agreed interest within a period of <strong>12 months</strong> from the date of execution.</p>
+
+                <h4 class="section-title">2. REPAYMENT TERMS</h4>
+                <p>Repayment shall be made through the OpportuGrow secure gateway. Failure to meet the repayment schedule may result in account suspension and further legal mediation through the platform's terms of service.</p>
+            </div>
+
+            <div th:if="${project.type.name() == 'FUND'}">
+                <h4 class="section-title">1. EQUITY INVESTMENT</h4>
+                <p>The Participant agrees to invest <strong>$<span th:text="${amount}">0.00</span></strong> into the business venture. In exchange, the Project Creator agrees to grant the Participant a proportional share of project rewards or equity as specified in the "Venture Prospectus" filed on the OpportuGrow platform.</p>
+
+                <h4 class="section-title">2. RISK ACKNOWLEDGMENT</h4>
+                <p>The Participant understands that business investments carry inherent risks. The OpportuGrow platform does not guarantee financial returns, and the Participant enters this partnership voluntarily.</p>
+            </div>
+
+            <h4 class="section-title">3. GOVERNING LAW</h4>
+            <p>This digital instrument is governed by the Digital Signature Act and the OpportuGrow Platform User Agreement. Both parties agree that electronic confirmation constitutes a binding legal signature.</p>
+
+            <div class="signature-box row">
+                <div class="col-6">
+                    <p>Digital Signature of Participant:</p>
+                    <div class="signature-line" th:text="${investor.name}">Digital Signature</div>
+                    <p><small>IP Address Recorded: <span th:text="${userIp}">127.0.0.1</span></small></p>
+                </div>
+                <div class="col-6 text-end">
+                    <p>Platform Verification:</p>
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=OpportuGrowVerified" alt="Verified QR">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fas fa-print"></i> Print Copy
+        </button>
+        <div>
+            <a href="/projects" class="btn btn-danger me-2">Decline</a>
+            <a th:href="@{/projects/{id}/payment(id=${project.id}, amount=${amount})}" class="btn btn-success btn-lg">
+                Accept & Proceed to Payment <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

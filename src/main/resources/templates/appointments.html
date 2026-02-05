@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Consultation | OpportuGrow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0d3b2a; --accent: #52b788; --light-bg: #f4f7f6;
+            --gradient: linear-gradient(135deg, #0d3b2a 0%, #2d6a4f 100%);
+        }
+        body { background-color: var(--light-bg); font-family: 'Inter', sans-serif; color: #333; }
+
+        /* التثبيت الذكي للملخص على اليمين */
+        @media (min-width: 992px) {
+            .sticky-summary {
+                position: sticky;
+                top: 100px;
+                height: fit-content;
+                z-index: 100;
+            }
+        }
+
+        /* تنسيق بطاقة المستشار */
+        .consultant-card {
+            background: white; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.3s;
+            border: 2px solid transparent; height: 100%;
+        }
+        .consultant-card.selected-card { border-color: var(--accent); transform: translateY(-5px); }
+        .card-header-pro { background: var(--gradient); color: white; padding: 2rem 1rem; text-align: center; position: relative; }
+        .avatar-circle { width: 65px; height: 65px; background: rgba(255,255,255,0.2); border-radius: 50%;
+                        display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 1.5rem; font-weight: bold; }
+
+        /* تنسيق المواعيد (Slots) */
+        .slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; padding: 1.2rem; }
+        .slot-btn {
+            background: #fff; border: 1.5px solid #eef2f1; border-radius: 12px; padding: 10px 5px;
+            text-align: center; cursor: pointer; transition: 0.2s;
+        }
+        .slot-btn:hover:not(.booked) { border-color: var(--accent); background: #f0fff4; }
+        .slot-btn.selected { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 12px rgba(82,183,136,0.3); }
+        .slot-btn.booked { background: #f9f9f9; color: #ccc; cursor: not-allowed; text-decoration: line-through; border-color: #eee; }
+
+        /* صندوق الملخص */
+        .summary-box { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 15px 40px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.02); }
+        .book-btn { width: 100%; background: var(--accent); color: white; border: none; padding: 1rem; border-radius: 12px; font-weight: 700; transition: 0.3s; }
+        .book-btn:hover:not(:disabled) { background: #40916c; transform: translateY(-2px); }
+        .book-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+
+        .empty-state { padding: 2rem; text-align: center; color: #999; }
+
+        /* تنبيه النجاح العائم */
+        #successAlert {
+            position: fixed; top: 20px; right: 20px; z-index: 10000;
+            min-width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-5 mt-4">
+    <div th:if="${param.success}" id="successAlert"
+         class="alert alert-success alert-dismissible fade show animate__animated animate__backInDown"
+         role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-check-circle me-3 fa-lg"></i>
+            <div>
+                <strong>Success!</strong> Your appointment is booked.
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <h2 class="fw-bold mb-4" style="color: var(--primary)">Choose your Expert</h2>
+            <div class="row g-4">
+                <div class="col-md-6" th:each="consultant : ${consultants}">
+                    <div class="consultant-card" th:id="'card-' + ${consultant.id}">
+                        <div class="card-header-pro">
+                            <div class="avatar-circle" th:text="${consultant.name.substring(0,1)}">M</div>
+                            <h5 class="mb-0 fw-bold" th:text="${consultant.name}">Name</h5>
+                            <span class="badge bg-dark bg-opacity-25 mt-2" th:text="${consultant.specialty}">Tech</span>
+                        </div>
+
+                        <div class="slots-section">
+                            <div class="p-3 border-bottom small fw-bold text-muted bg-light bg-opacity-50">
+                                <i class="fas fa-clock me-2 text-success"></i>Available Time Slots
+                            </div>
+
+                            <div class="slots-grid" th:if="${not #lists.isEmpty(consultant.availableSlots)}">
+                                <div th:each="slot : ${consultant.availableSlots}"
+                                     class="slot-btn"
+                                     th:classappend="${slot.booked} ? 'booked' : ''"
+                                     th:data-consultant-id="${consultant.id}"
+                                     th:data-consultant-name="${consultant.name}"
+                                     th:data-date="${slot.date}"
+                                     th:data-time="${slot.time}"
+                                     onclick="selectSlot(this)">
+                                    <strong th:text="${slot.time}">10:00</strong>
+                                    <div class="small opacity-75" th:text="${#temporals.format(slot.date, 'MMM dd')}">Date</div>
+                                </div>
+                            </div>
+
+                            <div class="empty-state" th:if="${#lists.isEmpty(consultant.availableSlots)}">
+                                <i class="fas fa-calendar-times fa-2x mb-2 opacity-25"></i>
+                                <p class="small mb-0">No slots available for now.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="sticky-summary">
+                <div class="summary-box animate__animated animate__fadeInRight">
+                    <h4 class="fw-bold mb-4" style="color: var(--primary)">
+                        <i class="fas fa-receipt me-2 text-success"></i>Booking Summary
+                    </h4>
+
+                    <div class="summary-details">
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Expert:</span>
+                            <span id="displayConsultant" class="fw-bold">-</span>
+                        </div>
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Date:</span>
+                            <span id="displayDate" class="fw-bold">-</span>
+                        </div>
+                        <div class="mb-4 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Time:</span>
+                            <span id="displayTime" class="fw-bold">-</span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 opacity-50">
+
+                    <form th:action="@{/appointments/book}" method="post" id="finalForm">
+                        <input type="hidden" name="consultantId" id="inputConsultant">
+                        <input type="hidden" name="date" id="inputDate">
+                        <input type="hidden" name="time" id="inputTime">
+
+                        <button type="button" class="book-btn" id="confirmBtn" disabled onclick="handleConfirm()">
+                            Confirm Appointment
+                        </button>
+                    </form>
+
+                    <div class="mt-4 p-2 bg-light rounded text-center">
+                        <small class="text-muted"><i class="fas fa-lock me-1"></i> Secure Session</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // إخفاء رسالة النجاح تلقائياً بعد 4 ثواني
+    document.addEventListener('DOMContentLoaded', function() {
+        const alert = document.getElementById('successAlert');
+        if (alert) {
+            setTimeout(() => {
+                alert.classList.remove('animate__backInDown');
+                alert.classList.add('animate__fadeOutRight');
+                setTimeout(() => { alert.remove(); }, 1000);
+            }, 4000);
+        }
+    });
+
+    // اختيار الموعد وتحديث البيانات
+    function selectSlot(el) {
+        if (el.classList.contains('booked')) return;
+
+        // إعادة ضبط الاختيارات السابقة
+        document.querySelectorAll('.slot-btn').forEach(s => s.classList.remove('selected'));
+        document.querySelectorAll('.consultant-card').forEach(c => c.classList.remove('selected-card'));
+
+        // تحديد العنصر الحالي
+        el.classList.add('selected');
+        const card = document.getElementById('card-' + el.dataset.consultantId);
+        if(card) card.classList.add('selected-card');
+
+        // تحديث واجهة الملخص
+        document.getElementById('displayConsultant').innerText = el.dataset.consultantName;
+        document.getElementById('displayDate').innerText = el.dataset.date;
+        document.getElementById('displayTime').innerText = el.dataset.time;
+
+        // ملء بيانات الفورم المخفي
+        document.getElementById('inputConsultant').value = el.dataset.consultantId;
+        document.getElementById('inputDate').value = el.dataset.date;
+        document.getElementById('inputTime').value = el.dataset.time;
+
+        // تفعيل الزر
+        document.getElementById('confirmBtn').disabled = false;
+    }
+
+    // تأكيد الحجز مع تأثير بصري
+    function handleConfirm() {
+        const btn = document.getElementById('confirmBtn');
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Booking...';
+        btn.disabled = true;
+        setTimeout(() => {
+            document.getElementById('finalForm').submit();
+        }, 800);
+    }
+</script>
+
+</body>
+</html>

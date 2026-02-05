@@ -1,0 +1,471 @@
+<div th:fragment="content" xmlns:th="http://www.w3.org/1999/xhtml">
+    <style>
+        /* Modern Variables & Global Styles */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #64748b;
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            --border-glass: rgba(255, 255, 255, 0.3);
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Container & Background Decoration */
+        .admin-projects-wrapper {
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dynamic Page Header */
+        .header-premium {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 24px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .header-premium::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(99, 102, 241, 0.2);
+            filter: blur(80px);
+            border-radius: 50%;
+        }
+
+        .header-premium h1 {
+            color: white;
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .header-premium p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            max-width: 600px;
+        }
+
+        /* Glass Filter Bar */
+        .glass-filter-bar {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto;
+            gap: 20px;
+            align-items: end;
+            box-shadow: var(--card-shadow);
+        }
+
+        .filter-item label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .modern-select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .modern-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+
+        /* Modern Project Table */
+        .table-premium-container {
+            background: white;
+            border-radius: 24px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #f1f5f9;
+        }
+
+        .premium-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .premium-table thead th {
+            background: #f8fafc;
+            padding: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .premium-table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .premium-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .premium-table td {
+            padding: 20px;
+            vertical-align: middle;
+        }
+
+        /* Project & Owner Styles */
+        .project-main-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .project-icon {
+            width: 45px;
+            height: 45px;
+            background: #eef2ff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .project-meta h4 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .owner-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* Status & Progress */
+        .status-pill {
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .status-PENDING { background: #fef3c7; color: #d97706; }
+        .status-APPROVED { background: #dcfce7; color: #16a34a; }
+        .status-REJECTED { background: #fee2e2; color: #dc2626; }
+
+        .funding-bar-wrapper {
+            width: 150px;
+        }
+
+        .funding-bar-bg {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+
+        .funding-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            border-radius: 10px;
+        }
+
+        /* Action Buttons */
+        .btn-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+
+        .btn-view-modern { background: #e0f2fe; color: #0369a1; }
+        .btn-view-modern:hover { transform: scale(1.1); background: #0369a1; color: white; }
+
+        .btn-delete-modern { background: #fee2e2; color: #dc2626; }
+        .btn-delete-modern:hover { transform: scale(1.1); background: #dc2626; color: white; }
+        /* Streamlined Filter Styling */
+.filter-streamline {
+    margin: 0 20px 25px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.filter-wrapper {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 8px 25px;
+    border-radius: 50px; /* يجعل الشريط بيضاوي انسيابي */
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.filter-wrapper:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-label {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-section i {
+    color: var(--primary);
+}
+
+.minimal-select {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    outline: none;
+    transition: color 0.3s ease;
+}
+
+.minimal-select:hover {
+    color: var(--primary);
+}
+
+.filter-divider {
+    width: 1px;
+    height: 24px;
+    background: #e2e8f0;
+}
+
+.btn-reset-minimal {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-reset-minimal:hover {
+    background: #dc2626;
+    color: white;
+    transform: rotate(-180deg);
+}
+
+    </style>
+
+    <div class="admin-projects-wrapper">
+        <div class="header-premium">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1>Projects Ecosystem</h1>
+                    <p>Manage, review, and monitor all growth opportunities across the platform from one central hub.</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge bg-primary rounded-pill p-3" th:text="${#lists.size(projects)} + ' ACTIVE PROJECTS'">0 PROJECTS</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-streamline">
+            <div class="filter-wrapper">
+                <div class="filter-section">
+                    <i class="bi bi-funnel"></i>
+                    <span class="filter-label">Quick Filters:</span>
+                </div>
+
+                <div class="filter-section">
+                    <select class="minimal-select" id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="pending">⏳ Pending</option>
+                        <option value="approved">✅ Approved</option>
+                        <option value="rejected">❌ Rejected</option>
+                    </select>
+                </div>
+
+                <div class="filter-divider"></div>
+
+                <div class="filter-section">
+                    <select class="minimal-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="AGRICULTURE">🌱 Agriculture</option>
+                        <option value="TECHNOLOGY">💻 Technology</option>
+                        <option value="EDUCATION">🎓 Education</option>
+                        <option value="HEALTHCARE">🏥 Healthcare</option>
+                    </select>
+                </div>
+
+                <button class="btn-reset-minimal" onclick="clearFilters()" title="Reset Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-premium-container">
+            <table class="premium-table" id="projectsTable">
+                <thead>
+                <tr>
+                    <th>Project Overview</th>
+                    <th>Leader</th>
+                    <th>Category</th>
+                    <th>Funding Goal</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="project : ${projects}" class="project-row"
+                    th:data-status="${project.status.name().toLowerCase()}"
+                    th:data-category="${project.category.toLowerCase()}">
+                    <td>
+                        <div class="project-main-info">
+                            <div class="project-icon">
+                                <i class="bi bi-rocket-takeoff"></i>
+                            </div>
+                            <div class="project-meta">
+                                <h4 th:text="${project.title}">Title</h4>
+                                <small class="text-muted" th:text="'#PROJ-' + ${project.id}">ID</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="owner-pill">
+                            <i class="bi bi-person-circle"></i>
+                            <span th:text="${project.owner.name}">Name</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border p-2" th:text="${project.category}">Category</span>
+                    </td>
+                    <td>
+                        <div class="funding-bar-wrapper">
+                            <div class="funding-bar-bg">
+                                <div class="funding-bar-fill" th:style="'width: ' + ${(project.raisedAmount / project.fundingGoal) * 100} + '%;'"></div>
+                            </div>
+                            <span class="fw-bold" th:text="'$' + ${project.fundingGoal}">$0</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span th:text="${project.status}" th:classappend="'status-pill status-' + ${project.status}">
+                            PENDING
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a th:href="@{'/admin/projects/view/' + ${project.id}}" class="btn-circle btn-view-modern" title="View Details">
+                                <i class="bi bi-arrow-right-short"></i>
+                            </a>
+                            <form th:action="@{/admin/projects/delete/{id}(id=${project.id})}" method="post" style="display:inline;">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn-circle btn-delete-modern" onclick="return confirm('Permanent delete?')">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div id="emptyState" style="display:none;" class="text-center py-5">
+                <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" style="width: 120px; opacity: 0.5;" alt="No Data">
+                <h3 class="mt-4 text-muted">No projects match your filters</h3>
+                <button class="btn btn-primary mt-3 rounded-pill" onclick="clearFilters()">Reset Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth Filtering Logic
+        function filterProjects() {
+            const status = document.getElementById('statusFilter').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value.toLowerCase();
+            const rows = document.querySelectorAll('.project-row');
+            let found = 0;
+
+            rows.forEach(row => {
+                const sMatch = !status || row.dataset.status === status;
+                const cMatch = !category || row.dataset.category === category;
+
+                if(sMatch && cMatch) {
+                    row.style.display = '';
+                    row.style.animation = 'fadeIn 0.5s ease-out forwards';
+                    found++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            document.getElementById('emptyState').style.display = found === 0 ? 'block' : 'none';
+        }
+
+        function clearFilters() {
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('categoryFilter').value = '';
+    filterProjects(); // تأكد من استدعاء ميثود الفلترة بعد التصفير
+}
+
+        document.getElementById('statusFilter').addEventListener('change', filterProjects);
+        document.getElementById('categoryFilter').addEventListener('change', filterProjects);
+    </script>
+</div>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Project - Step 1 | OpportuGrow</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* نفس الـ styles اللي في homepage */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #2ecc71;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 76px;
+            min-height: 100vh;
+        }
+
+        /* Main Container */
+        .creation-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Header بنفس الـ gradient */
+        .creation-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .project-type-badge {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .creation-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .creation-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Step Progress Bar */
+        .step-progress {
+            padding: 40px;
+            background: white;
+            border-bottom: 1px solid var(--light);
+        }
+
+        .step-tracker {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .step-tracker::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50px;
+            right: 50px;
+            height: 4px;
+            background: var(--light);
+            z-index: 1;
+        }
+
+        .step-item {
+            text-align: center;
+            z-index: 2;
+            position: relative;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 45px;
+            height: 45px;
+            background: var(--light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-weight: 700;
+            color: #666;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            border: 3px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .step-item.active .step-circle {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step-item.completed .step-circle {
+            background: var(--accent);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .step-item.active .step-label {
+            color: var(--secondary);
+        }
+
+        .step-item.completed .step-label {
+            color: var(--accent);
+        }
+
+        /* Form Container */
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .form-title {
+            color: var(--primary);
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        /* Form Inputs */
+        .form-input-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label i {
+            color: var(--secondary);
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 40px;
+            border-top: 1px solid var(--light);
+        }
+
+        .btn-custom {
+            padding: 14px 35px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-back {
+            background: white;
+            color: var(--primary);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-back:hover {
+            background: var(--light);
+            border-color: var(--secondary);
+            color: var(--secondary);
+            transform: translateX(-5px);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            border: none;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .creation-container {
+                margin: 20px auto;
+                border-radius: 20px;
+            }
+
+            .creation-header {
+                padding: 40px 20px;
+            }
+
+            .form-container {
+                padding: 30px 20px;
+            }
+
+            .step-tracker::before {
+                left: 30px;
+                right: 30px;
+            }
+
+            .step-label {
+                font-size: 13px;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .btn-custom {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Character Counter */
+        .char-counter {
+            font-size: 14px;
+            color: #666;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: #f39c12;
+        }
+
+        .char-counter.danger {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation Bar -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<!-- Main Container -->
+<div class="creation-container">
+    <!-- Header -->
+    <div class="creation-header">
+        <div class="project-type-badge">
+            <i class="fas fa-hand-holding-usd"></i>
+            <span>Business Loan Project</span>
+        </div>
+        <h1>Create Your Project</h1>
+        <p>Fill in the basic details of your project. You can always edit this information later.</p>
+    </div>
+
+    <!-- Step Progress -->
+    <div class="step-progress">
+        <div class="step-tracker">
+            <div class="step-item active">
+                <div class="step-circle">1</div>
+                <div class="step-label">Basic Info</div>
+            </div>
+            <div class="step-item">
+                <div class="step-circle">2</div>
+                <div class="step-label">Funding Details</div>
+            </div>
+            <div class="step-item">
+                <div class="step-circle">3</div>
+                <div class="step-label">Loan Terms</div>
+            </div>
+            <div class="step-item">
+                <div class="step-circle">4</div>
+                <div class="step-label">Review & Submit</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-container">
+        <form th:action="@{/create-project/step1}" method="post" th:object="${projectRegister}">
+            <!-- Section 1: Project Identity -->
+            <div class="form-section">
+                <h3 class="form-title">
+                    <i class="fas fa-id-card"></i> Project Identity
+                </h3>
+
+                <div class="form-input-group">
+                    <label class="form-label" for="title">
+                        <i class="fas fa-heading"></i> Project Title
+                    </label>
+                    <input type="text" th:field="*{title}" class="form-control" id="title"
+                           placeholder="e.g., Organic Farm Expansion in Rural Areas" required>
+                    <div class="form-text">
+                        Choose a clear, descriptive title that captures your project's essence
+                    </div>
+                    <div class="char-counter">
+                        <span id="titleCounter">0</span>/80 characters
+                    </div>
+                </div>
+
+                <div class="form-input-group">
+                    <label class="form-label" for="shortDescription">
+                        <i class="fas fa-align-left"></i> Short Description
+                    </label>
+                    <textarea th:field="*{shortDescription}" class="form-control" id="shortDescription"
+                              rows="2" placeholder="Briefly describe your project in 2-3 sentences..." required></textarea>
+                    <div class="form-text">
+                        This will appear in project listings and search results
+                    </div>
+                    <div class="char-counter">
+                        <span id="shortDescCounter">0</span>/200 characters
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Detailed Information -->
+            <div class="form-section">
+                <h3 class="form-title">
+                    <i class="fas fa-file-alt"></i> Detailed Information
+                </h3>
+
+                <div class="form-input-group">
+                    <label class="form-label" for="longDescription">
+                        <i class="fas fa-align-justify"></i> Full Project Description
+                    </label>
+                    <textarea th:field="*{longDescription}" class="form-control" id="longDescription"
+                              rows="5" placeholder="Describe your project in detail. Include: What problem are you solving? How will you use the funds? What makes your project unique?"></textarea>
+                    <div class="form-text">
+                        Be specific and compelling. This is your chance to convince potential backers
+                    </div>
+                    <div class="char-counter">
+                        <span id="longDescCounter">0</span>/2000 characters
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Project Category -->
+            <div class="form-section">
+                <h3 class="form-title">
+                    <i class="fas fa-tags"></i> Project Category
+                </h3>
+
+                <div class="form-input-group">
+                    <label class="form-label" for="category">
+                        <i class="fas fa-folder"></i> Select Category
+                    </label>
+                    <select th:field="*{category}" class="form-select" id="category" required>
+                        <option value="">Choose a category that best fits your project</option>
+                        <option value="AGRICULTURE">🌱 Agriculture & Farming</option>
+                        <option value="BUSINESS">💼 Business & Entrepreneurship</option>
+                        <option value="TECHNOLOGY">💻 Technology & Innovation</option>
+                        <option value="EDUCATION">🎓 Education & Training</option>
+                        <option value="HEALTHCARE">🏥 Healthcare & Wellness</option>
+                        <option value="RENEWABLE">⚡ Renewable Energy</option>
+                        <option value="MANUFACTURING">🏭 Manufacturing & Production</option>
+                        <option value="FOOD_BEVERAGE">🍽️ Food & Beverage</option>
+                        <option value="RETAIL">🛍️ Retail & E-commerce</option>
+                        <option value="SERVICES">🔧 Services & Consulting</option>
+                    </select>
+                    <div class="form-text">
+                        This helps investors find projects that match their interests
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="nav-buttons">
+                <a th:href="@{/create-project/choose-type}" class="btn-custom btn-back">
+                    <i class="fas fa-arrow-left"></i> Change Project Type
+                </a>
+                <button type="submit" class="btn-custom btn-next">
+                    Continue to Funding Details <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Character Counter Script -->
+<script>
+    // Character counters
+    const titleInput = document.getElementById('title');
+    const shortDescInput = document.getElementById('shortDescription');
+    const longDescInput = document.getElementById('longDescription');
+
+    const titleCounter = document.getElementById('titleCounter');
+    const shortDescCounter = document.getElementById('shortDescCounter');
+    const longDescCounter = document.getElementById('longDescCounter');
+
+    function updateCounter(input, counterElement, maxLength) {
+        const count = input.value.length;
+        counterElement.textContent = count;
+
+        // Update color based on length
+        counterElement.parentElement.classList.remove('warning', 'danger');
+        if (count > maxLength * 0.8) {
+            counterElement.parentElement.classList.add('warning');
+        }
+        if (count > maxLength) {
+            counterElement.parentElement.classList.add('danger');
+            input.value = input.value.substring(0, maxLength);
+            counterElement.textContent = maxLength;
+        }
+    }
+
+    // Event listeners for character counters
+    titleInput.addEventListener('input', () => updateCounter(titleInput, titleCounter, 80));
+    shortDescInput.addEventListener('input', () => updateCounter(shortDescInput, shortDescCounter, 200));
+    longDescInput.addEventListener('input', () => updateCounter(longDescInput, longDescCounter, 2000));
+
+    // Initialize counters
+    updateCounter(titleInput, titleCounter, 80);
+    updateCounter(shortDescInput, shortDescCounter, 200);
+    updateCounter(longDescInput, longDescCounter, 2000);
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const title = titleInput.value.trim();
+        const shortDesc = shortDescInput.value.trim();
+        const category = document.getElementById('category').value;
+
+        if (!title || title.length < 10) {
+            e.preventDefault();
+            alert('Please enter a project title with at least 10 characters');
+            titleInput.focus();
+            return;
+        }
+
+        if (!shortDesc || shortDesc.length < 30) {
+            e.preventDefault();
+            alert('Please provide a short description with at least 30 characters');
+            shortDescInput.focus();
+            return;
+        }
+
+        if (!category) {
+            e.preventDefault();
+            alert('Please select a project category');
+            document.getElementById('category').focus();
+            return;
+        }
+
+        // If all valid, add loading state to button
+        const submitBtn = document.querySelector('.btn-next');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+    });
+
+    // Auto-resize textareas
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+    }
+
+    shortDescInput.addEventListener('input', () => autoResize(shortDescInput));
+    longDescInput.addEventListener('input', () => autoResize(longDescInput));
+
+    // Initialize textarea heights
+    autoResize(shortDescInput);
+    autoResize(longDescInput);
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit User | Users Management</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --warning-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --dark-gradient: linear-gradient(135deg, #141e30 0%, #243b55 100%);
+            --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+            --light-bg: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        }
+
+        body {
+            background: var(--light-bg);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .edit-container {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .edit-header {
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        .edit-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .edit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .edit-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .edit-card-header {
+            background: var(--dark-gradient);
+            color: white;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .edit-card-header::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .edit-card-header h4 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .edit-card-header h4 i {
+            font-size: 1.5rem;
+        }
+
+        .edit-card-body {
+            padding: 40px;
+            position: relative;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label i {
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .form-control-custom {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            height: auto;
+        }
+
+        .form-control-custom:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .form-select-custom {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            height: auto;
+            background-position: right 15px center;
+            background-size: 16px 12px;
+        }
+
+        .form-select-custom:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .edit-card-footer {
+            background: #f8f9fa;
+            padding: 25px 40px;
+            text-align: right;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn-save {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 14px 35px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-save:hover {
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 2px solid #6c757d;
+            color: #6c757d;
+            padding: 14px 35px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 15px;
+        }
+
+        .btn-cancel:hover {
+            background: #6c757d;
+            color: white;
+            transform: translateY(-3px);
+            text-decoration: none;
+        }
+
+        .required-field::after {
+            content: ' *';
+            color: #dc3545;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #495057;
+            margin: 35px 0 20px 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f2f5;
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #667eea;
+            font-size: 1.5rem;
+        }
+
+        .password-box {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .password-box .form-group {
+            margin-bottom: 20px;
+        }
+
+        .password-note {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 5px;
+            margin-left: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .edit-card-body {
+                padding: 30px 20px;
+            }
+
+            .edit-card-header {
+                padding: 25px 20px;
+            }
+
+            .edit-card-header h4 {
+                font-size: 1.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .edit-card-footer {
+                padding: 20px;
+                text-align: center;
+            }
+
+            .btn-save, .btn-cancel {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 10px;
+                margin-right: 0;
+            }
+
+            .password-box {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="edit-container">
+    <div class="edit-header">
+        <a th:href="@{/admin/users}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Users
+        </a>
+    </div>
+
+    <div class="edit-card">
+        <div class="edit-card-header d-flex justify-content-between align-items-center">
+            <h4>
+                <i class="bi bi-pencil-square"></i> Edit User
+            </h4>
+        </div>
+
+        <form th:action="@{/admin/users/edit/{id}(id=${user.id})}"
+              th:object="${user}"
+              method="post">
+
+            <div class="edit-card-body">
+                <div class="form-row">
+                    <!-- Full Name Field -->
+                    <div class="form-group">
+                        <label class="form-label required-field">
+                            <i class="bi bi-person-fill"></i> Full Name
+                        </label>
+                        <input type="text" class="form-control form-control-custom"
+                               th:field="*{name}"
+                               placeholder="Enter full name"
+                               required>
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <label class="form-label required-field">
+                            <i class="bi bi-envelope-fill"></i> Email Address
+                        </label>
+                        <input type="email" class="form-control form-control-custom"
+                               th:field="*{email}"
+                               placeholder="Enter email address"
+                               required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- Phone Field -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-telephone-fill"></i> Phone Number
+                        </label>
+                        <input type="text" class="form-control form-control-custom"
+                               th:field="*{phone}"
+                               placeholder="Enter phone number">
+                    </div>
+
+                    <!-- Address Field -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-geo-alt-fill"></i> Address
+                        </label>
+                        <input type="text" class="form-control form-control-custom"
+                               th:field="*{address}"
+                               placeholder="Enter address">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- Role Field -->
+                    <div class="form-group">
+                        <label class="form-label required-field">
+                            <i class="bi bi-person-badge-fill"></i> User Role
+                        </label>
+                        <select class="form-select form-select-custom" th:field="*{role}">
+                            <option th:each="r : ${roles}"
+                                    th:value="${r}"
+                                    th:text="${r}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Status Field -->
+                    <div class="form-group">
+                        <label class="form-label required-field">
+                            <i class="bi bi-circle-fill"></i> Account Status
+                        </label>
+                        <select class="form-select form-select-custom" th:field="*{active}">
+                            <option th:value="true">Active</option>
+                            <option th:value="false">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Password Section -->
+                <h3 class="section-title">
+                    <i class="bi bi-shield-lock"></i> Change Password
+                </h3>
+
+                <div class="password-box">
+                    <div class="form-row">
+                        <!-- New Password Field -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-key-fill"></i> New Password
+                            </label>
+                            <input type="password"
+                                   name="newPassword"
+                                   class="form-control form-control-custom"
+                                   placeholder="Leave empty to keep current password">
+                            <div class="password-note">Optional: Leave blank to keep current password</div>
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-key"></i> Confirm Password
+                            </label>
+                            <input type="password"
+                                   name="confirmPassword"
+                                   class="form-control form-control-custom"
+                                   placeholder="Re-enter new password">
+                            <div class="password-note">Re-enter new password to confirm</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="edit-card-footer">
+                <a th:href="@{/admin/users/view/{id}(id=${user.id})}"
+                   class="btn-cancel">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+                <button type="submit" class="btn-save">
+                    <i class="bi bi-check-circle"></i> Save Changes
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Project Submitted</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+  <div class="card text-center p-4 shadow">
+    <h3 class="text-success mb-3">✅ Project Submitted</h3>
+
+    <p th:text="${message}">
+      Your project is under review and waiting for admin approval.
+    </p>
+
+    <a href="/" class="btn btn-primary mt-3">Back to Home</a>
+  </div>
+</div>
+
+</body>
+</html>

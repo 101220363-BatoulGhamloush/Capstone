@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - OpportuGrow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #2ecc71;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding-top: 70px; }
+
+        /* Dashboard Stats */
+        .stats-card { border-radius: 15px; padding: 20px; color: white; transition: all 0.3s; }
+        .stats-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .stats-icon { font-size: 2rem; }
+        .stats-title { font-size: 1rem; opacity: 0.8; }
+        .stats-number { font-size: 1.6rem; font-weight: 700; }
+
+        /* Project Cards */
+        .project-card { border-radius: 15px; overflow: hidden; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: all 0.3s; }
+        .project-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .project-image { height: 180px; overflow: hidden; position: relative; }
+        .project-image img { width: 100%; height: 100%; object-fit: cover; }
+        .progress-fill { height: 8px; background: var(--accent); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container">
+
+    <!-- Dashboard Stats -->
+    <div class="row mb-4 g-4">
+        <div class="col-md-3">
+            <div class="stats-card bg-primary text-center">
+                <i class="fas fa-project-diagram stats-icon"></i>
+                <div class="stats-title">My Projects</div>
+                <div class="stats-number" th:text="${myProjects.size()}">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card bg-secondary text-center">
+                <i class="fas fa-globe stats-icon"></i>
+                <div class="stats-title">Total Projects</div>
+                <div class="stats-number" th:text="${totalProjects}">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card bg-success text-center">
+                <i class="fas fa-dollar-sign stats-icon"></i>
+                <div class="stats-title">Total Raised</div>
+                <div class="stats-number" th:text="${totalRaised}">$0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card bg-warning text-center">
+                <i class="fas fa-users stats-icon"></i>
+                <div class="stats-title">Users</div>
+                <div class="stats-number" th:text="${totalUsers}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Projects -->
+    <h3 class="mb-3">My Projects</h3>
+    <div class="row g-4">
+        <div th:if="${#lists.isEmpty(myProjects)}" class="col-12">
+            <div class="alert alert-info text-center p-5">
+                <i class="fas fa-info-circle fa-3x mb-3"></i>
+                <h4>No projects yet!</h4>
+                <p>Start creating your first project to showcase your ideas.</p>
+                <a th:href="@{/create-project/choose-type}" class="btn btn-primary">Create Project</a>
+            </div>
+        </div>
+
+        <div th:each="project : ${myProjects}" class="col-lg-4 col-md-6">
+            <div class="project-card">
+                <div class="project-image">
+                    <img th:if="${project.imageUrl != null}" th:src="@{${project.imageUrl}}" alt="Project Image">
+                    <div th:if="${project.imageUrl == null}" style="width:100%; height:100%; background:linear-gradient(45deg, #3498db, #2ecc71); display:flex; align-items:center; justify-content:center; color:white;">
+                        <i class="fas fa-lightbulb" style="font-size:3rem;"></i>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h5 th:text="${project.title}">Project Title</h5>
+                    <p class="mb-2" th:text="${project.shortDescription}">Short description...</p>
+                    <div class="mb-2">
+                        <div class="progress">
+                            <div class="progress-fill" th:style="'width:' + ${project.fundingPercent} + '%'"></div>
+                        </div>
+                        <small th:text="${project.fundingPercent} + '%'">0%</small>
+                    </div>
+                    <a th:href="@{/projects/{id}(id=${project.id})}" class="btn btn-sm btn-outline-primary w-100">View Project</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

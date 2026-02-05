@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<div th:fragment="navbar">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" th:href="@{/}">
+                <i class="fas fa-seedling me-2 text-success"></i>
+                <span class="fw-bold">OpportuGrow</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/projects}"><i class="fas fa-search me-1"></i> Browse Projects</a>
+                    </li>
+
+                    <li class="nav-item" sec:authorize="isAnonymous()">
+                        <a class="nav-link" th:href="@{/login}"><i class="fas fa-sign-in-alt me-1"></i> Login</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAnonymous()">
+                        <a class="btn btn-success ms-2" th:href="@{/register}"><i class="fas fa-user-plus me-1"></i> Register</a>
+                    </li>
+
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" th:href="@{/dashboard}"><i class="fas fa-tachometer-alt me-1"></i> Dashboard</a>
+                    </li>
+
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" th:href="@{/create-project/choose-type}"><i class="fas fa-plus-circle me-1"></i> Create Project</a>
+                    </li>
+
+                    <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-tie me-1"></i> Consultant
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/appointments}"><i class="fas fa-calendar-check me-2"></i> Take Appointment</a></li>
+                            <li><a class="dropdown-item" th:href="@{/articles}"><i class="fas fa-eye me-2"></i> View Consultant Projects</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" th:href="@{/notifications}"><i class="fas fa-bell me-1"></i> Notifications</a>
+                    </li>
+
+                    <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            <span sec:authentication="name">Username</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" th:href="@{/profile}"><i class="fas fa-user me-2"></i> My Profile</a></li>
+                            <li><a class="dropdown-item" th:href="@{/my-projects}"><i class="fas fa-list me-2"></i> My Projects</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="m-0">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="dropdown-item text-danger bg-transparent border-0 w-100 text-start">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<div th:fragment="sidebar" xmlns:th="http://www.w3.org/1999/xhtml">
+    <div class="sidebar">
+        <h2>Admin</h2>
+        <a th:href="@{/admin/dashboard}" th:classappend="${activePage=='dashboard'} ? 'active'">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a th:href="@{/admin/users}" th:classappend="${activePage=='users'} ? 'active'">
+            <i class="bi bi-people-fill"></i> Users
+        </a>
+        <a th:href="@{/admin/projects}" th:classappend="${activePage=='projects'} ? 'active'">
+            <i class="bi bi-folder-fill"></i> Projects
+        </a>
+        <a th:href="@{/admin/reviews}" th:classappend="${activePage=='reviews'} ? 'active'">
+            <i class="bi bi-chat-dots-fill nav-icons"></i> Reviews
+        </a>
+        <a th:href="@{/admin/consultants}" th:classappend="${activePage=='consultant'} ? 'active'">
+            <i class="bi bi-person-badge nav-icon"></i> Consultant
+        </a>
+        <a th:href="@{/chat/admin/inbox}">
+            <i class="bi bi-chat-left-text"></i> Messages
+        </a>
+        <a th:href="@{/admin/logout}" th:classappend="${activePage=='logout'} ? 'active'">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+    </div>
+</div>
+

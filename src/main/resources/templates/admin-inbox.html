@@ -1,0 +1,66 @@
+<div th:fragment="content" xmlns:th="http://www.w3.org/1999/xhtml">
+  <div class="page-header">
+    <h1 class="page-title">Consultation Inbox</h1>
+    <p class="page-subtitle">Messages from users regarding rejected projects</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="bi bi-chat-left-dots"></i></div>
+      <div class="stat-value" th:text="${#lists.size(messages)}">0</div>
+      <div class="stat-label">Total Messages</div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <div class="table-header">
+      <h3>Recent Messages</h3>
+    </div>
+    <table class="table">
+      <thead>
+      <tr>
+        <th>User</th>
+        <th>Last Message</th>
+        <th>Time</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="msg : ${messages}">
+        <td>
+          <div class="d-flex align-items-center">
+            <div class="user-avatar"
+                 th:text="${#strings.substring(msg.sender.name,0,1)}">U</div>
+            <div>
+              <div class="fw-bold" th:text="${msg.sender.name}">User Name</div>
+              <small class="text-muted" th:text="${msg.sender.email}">email@test.com</small>
+            </div>
+          </div>
+        </td>
+        <td>
+                        <span class="text-truncate d-inline-block" style="max-width: 300px;"
+                              th:text="${msg.content}">Message snippet...</span>
+        </td>
+        <td th:text="${#temporals.format(msg.timestamp, 'dd/MM/yyyy HH:mm')}">Date</td>
+        <td>
+          <div class="action-buttons">
+            <a th:href="@{/chat/admin/reply/{userId}(userId=${msg.sender.id})}"
+               class="btn-action btn-action-edit" title="Reply">
+              <i class="bi bi-reply-fill"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+
+      <tr th:if="${#lists.isEmpty(messages)}">
+        <td colspan="4">
+          <div class="empty-state">
+            <i class="bi bi-chat-dots-fill"></i>
+            <p>No messages found in your inbox.</p>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

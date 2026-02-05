@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Project - Step 2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Project - Step 2 | OpportuGrow</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* نفس الـ styles اللي في Step 1 */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #2ecc71;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 76px;
+            min-height: 100vh;
+        }
+
+        /* Main Container */
+        .creation-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .creation-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .project-type-badge {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .creation-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .creation-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Step Progress Bar */
+        .step-progress {
+            padding: 40px;
+            background: white;
+            border-bottom: 1px solid var(--light);
+        }
+
+        .step-tracker {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .step-tracker::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50px;
+            right: 50px;
+            height: 4px;
+            background: var(--light);
+            z-index: 1;
+        }
+
+        .step-item {
+            text-align: center;
+            z-index: 2;
+            position: relative;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 45px;
+            height: 45px;
+            background: var(--light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-weight: 700;
+            color: #666;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            border: 3px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .step-item.completed .step-circle {
+            background: var(--accent);
+            color: white;
+        }
+
+        .step-item.active .step-circle {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .step-item.completed .step-label {
+            color: var(--accent);
+        }
+
+        .step-item.active .step-label {
+            color: var(--secondary);
+        }
+
+        /* Form Container */
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .form-title {
+            color: var(--primary);
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        /* Form Inputs */
+        .form-input-group {
+            margin-bottom: 30px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label i {
+            color: var(--secondary);
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        /* Funding Options Grid */
+        .funding-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .funding-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .funding-option:hover {
+            border-color: var(--secondary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .funding-option.selected {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(52, 152, 219, 0.1));
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.2);
+        }
+
+        .funding-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: var(--secondary);
+        }
+
+        .funding-option.selected .funding-icon {
+            color: var(--accent);
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 40px;
+            border-top: 1px solid var(--light);
+        }
+
+        .btn-custom {
+            padding: 14px 35px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-back {
+            background: white;
+            color: var(--primary);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-back:hover {
+            background: var(--light);
+            border-color: var(--secondary);
+            color: var(--secondary);
+            transform: translateX(-5px);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            border: none;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Funding Preview Card */
+        .funding-preview {
+            background: linear-gradient(135deg, var(--light), white);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 2px solid var(--light);
+        }
+
+        .preview-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .preview-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .creation-container {
+                margin: 20px auto;
+                border-radius: 20px;
+            }
+
+            .creation-header {
+                padding: 40px 20px;
+            }
+
+            .form-container {
+                padding: 30px 20px;
+            }
+
+            .step-tracker::before {
+                left: 30px;
+                right: 30px;
+            }
+
+            .step-label {
+                font-size: 13px;
+            }
+
+            .funding-options {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .btn-custom {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Amount Input with Prefix */
+        .amount-input {
+            position: relative;
+        }
+
+        .amount-input .input-group-text {
+            background: var(--light);
+            border: 2px solid #e0e0e0;
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .amount-input .form-control {
+            border-left: none;
+            border-radius: 0 12px 12px 0;
+        }
+
+        /* Duration Slider */
+        .duration-slider {
+            margin: 30px 0;
+        }
+
+        .slider-container {
+            position: relative;
+            padding: 20px 0 40px;
+        }
+
+        .slider-values {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            display: none;
+        }
+
+        .toggle-slider {
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 30px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked + .toggle-slider {
+            background: var(--accent);
+        }
+
+        .toggle-switch input[type="checkbox"]:checked + .toggle-slider::before {
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation Bar -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<!-- Main Container -->
+<div class="creation-container">
+    <!-- Header -->
+    <div class="creation-header">
+        <div class="project-type-badge">
+            <i class="fas fa-hand-holding-usd"></i>
+            <span>Business Loan Project</span>
+        </div>
+        <h1>Funding Details</h1>
+        <p>Set your funding goal, duration, and other financial parameters for your project.</p>
+    </div>
+
+    <!-- Step Progress -->
+    <div class="step-progress">
+        <div class="step-tracker">
+            <div class="step-item completed">
+                <div class="step-circle">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="step-label">Basic Info</div>
+            </div>
+            <div class="step-item active">
+                <div class="step-circle">2</div>
+                <div class="step-label">Funding Details</div>
+            </div>
+            <div class="step-item">
+                <div class="step-circle">3</div>
+                <div class="step-label">Media & Story</div>
+            </div>
+            <div class="step-item">
+                <div class="step-circle">4</div>
+                <div class="step-label">Review & Submit</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-container">
+        <form th:object="${projectRegister}" th:action="@{/create-project/step2}" method="post" id="step2Form">
+            <!-- Section 1: Funding Goal -->
+            <div class="form-section">
+                <h3 class="form-title">
+                    <i class="fas fa-bullseye"></i> Funding Goal
+                </h3>
+
+                <div class="form-input-group">
+                    <label class="form-label">
+                        <i class="fas fa-money-bill-wave"></i> How much do you need?
+                    </label>
+                    <div class="amount-input">
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="text" th:field="*{fundingGoal}" class="form-control"
+                                   id="fundingGoal" placeholder="e.g., 10000" min="100" step="100" required>
+                        </div>
+                    </div>
+                    <div class="form-text">
+                        Set a realistic goal that covers your project costs. Minimum: $100
+                    </div>
+
+                    <!-- Goal Breakdown -->
+                    <div class="funding-preview mt-4" id="goalBreakdown">
+                        <div class="preview-item">
+                            <span>Project Goal:</span>
+                            <strong id="goalAmount">$0</strong>
+                        </div>
+                        <div class="preview-item">
+                            <span>Platform Fee (5%):</span>
+                            <strong id="platformFee">$0</strong>
+                        </div>
+                        <div class="preview-item">
+                            <span>Payment Processing (2.9%):</span>
+                            <strong id="processingFee">$0</strong>
+                        </div>
+                        <div class="preview-item">
+                            <span class="fw-bold">You Receive:</span>
+                            <strong class="text-success" id="youReceive">$0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Funding Duration -->
+            <div class="form-section">
+                <h3 class="form-title">
+                    <i class="fas fa-clock"></i> Funding Duration
+                </h3>
+
+                <div class="form-input-group">
+                    <label class="form-label">
+                        <i class="fas fa-calendar-alt"></i> How long should your campaign run?
+                    </label>
+
+                    <div class="duration-slider">
+                        <input type="range" th:field="*{fundingDuration}" class="form-range"
+                               id="durationSlider" min="7" max="90" step="1" value="30">
+                        <div class="slider-values">
+                            <span>1 week</span>
+                            <span id="durationValue">30 days</span>
+                            <span>90 days</span>
+                        </div>
+                    </div>
+
+                    <div class="form-text">
+                        Shorter campaigns create urgency. Longer campaigns give more time to spread the word.
+                    </div>
+
+                    <!-- Duration Options -->
+                    <div class="funding-options mt-4">
+                        <div class="funding-option" data-days="15">
+                            <div class="funding-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h5>Quick Campaign</h5>
+                            <p>15 days</p>
+                            <small>Best for urgent needs</small>
+                        </div>
+                        <div class="funding-option selected" data-days="30">
+                            <div class="funding-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h5>Standard</h5>
+                            <p>30 days</p>
+                            <small>Most popular choice</small>
+                        </div>
+                        <div class="funding-option" data-days="60">
+                            <div class="funding-icon">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <h5>Extended</h5>
+                            <p>60 days</p>
+                            <small>For complex projects</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Contact Information -->
+            <div class="form-section">
+                <h3 class="form-title">
+                    <i class="fas fa-phone"></i> Contact Information
+                </h3>
+
+                <!-- Phone Number -->
+                <div class="form-input-group">
+                    <label class="form-label">
+                        <i class="fas fa-mobile-alt"></i> Phone Number
+                    </label>
+                    <input type="tel"
+                           th:field="*{phoneNumber}"
+                           class="form-control"
+                           placeholder="+961 70 123 456"
+                           required>
+                    <div class="form-text">
+                        This number will be used for verification and communication.
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="form-input-group">
+                    <label class="form-label">
+                        <i class="fas fa-map-marker-alt"></i> Address
+                    </label>
+                    <textarea th:field="*{address}"
+                              class="form-control"
+                              rows="3"
+                              placeholder="City, Street, Building, Floor"
+                              required></textarea>
+                    <div class="form-text">
+                        Please provide your current address.
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Navigation Buttons -->
+            <div class="nav-buttons">
+                <a th:href="@{/create-project/step1}" class="btn-custom btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Basic Info
+                </a>
+                <button type="submit" class="btn-custom btn-next">
+                    Continue to Media & Story <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    // Update funding goal breakdown
+    const fundingGoalInput = document.getElementById('fundingGoal');
+    const goalAmount = document.getElementById('goalAmount');
+    const platformFee = document.getElementById('platformFee');
+    const processingFee = document.getElementById('processingFee');
+    const youReceive = document.getElementById('youReceive');
+
+    function updateGoalBreakdown() {
+        const amount = parseFloat(
+                fundingGoalInput.value.replace(/,/g, '')
+           ) || 0;
+
+
+        if (amount >= 100) {
+            const platformFeeAmount = amount * 0.05;
+            const processingFeeAmount = amount * 0.029;
+            const netAmount = amount - platformFeeAmount - processingFeeAmount;
+
+            goalAmount.textContent = '$' + amount.toLocaleString();
+            platformFee.textContent = '$' + platformFeeAmount.toFixed(2);
+            processingFee.textContent = '$' + processingFeeAmount.toFixed(2);
+            youReceive.textContent = '$' + netAmount.toFixed(2);
+
+            // Show breakdown
+            document.getElementById('goalBreakdown').style.display = 'block';
+        } else {
+            // Hide breakdown for small amounts
+            document.getElementById('goalBreakdown').style.display = 'none';
+        }
+    }
+
+    fundingGoalInput.addEventListener('input', updateGoalBreakdown);
+    updateGoalBreakdown();
+
+    // Duration slider and options
+    const durationSlider = document.getElementById('durationSlider');
+    const durationValue = document.getElementById('durationValue');
+    const fundingOptions = document.querySelectorAll('.funding-option');
+
+    function updateDurationDisplay(value) {
+        durationValue.textContent = value + ' days';
+        durationSlider.value = value;
+
+        // Update selected option
+        fundingOptions.forEach(option => {
+            if (parseInt(option.dataset.days) === parseInt(value)) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+        });
+    }
+
+    durationSlider.addEventListener('input', function() {
+        updateDurationDisplay(this.value);
+    });
+
+    // Click on duration options
+    fundingOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const days = this.dataset.days;
+            updateDurationDisplay(days);
+        });
+    });
+
+    // Initialize duration display
+    updateDurationDisplay(durationSlider.value);
+
+    // Form validation
+    document.getElementById('step2Form').addEventListener('submit', function(e) {
+    // Clean commas before sending
+    fundingGoalInput.value = fundingGoalInput.value.replace(/,/g, '');
+
+    const goal = parseFloat(fundingGoalInput.value);
+
+    if (!goal || goal < 100) {
+        e.preventDefault();
+        alert('Please enter a funding goal of at least $100');
+        fundingGoalInput.focus();
+        return;
+    }
+
+    const submitBtn = this.querySelector('.btn-next');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    submitBtn.disabled = true;
+});
+
+
+    // Format number input with commas
+    fundingGoalInput.addEventListener('blur', function() {
+        const value = parseFloat(this.value);
+        if (!isNaN(value) && value >= 100) {
+            this.value = value.toLocaleString('en-US');
+        }
+    });
+
+    fundingGoalInput.addEventListener('focus', function() {
+        const value = this.value.replace(/,/g, '');
+        this.value = value;
+    });
+
+    // Tooltip for funding options
+    fundingOptions.forEach(option => {
+        option.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+        });
+
+        option.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('selected')) {
+                this.style.transform = 'translateY(0)';
+            }
+        });
+    });
+</script>
+</body>
+</html>
+
+</body>
+</html>
+
+

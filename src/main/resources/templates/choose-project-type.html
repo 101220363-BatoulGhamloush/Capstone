@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Project Type - OpportuGrow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* نفس CSS السابق */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #2ecc71;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; padding-top: 76px; min-height: 100vh; }
+        .type-container { max-width: 1000px; margin: 40px auto; background: white; border-radius: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow: hidden; }
+        .type-header { background: linear-gradient(135deg, var(--primary), var(--dark)); color: white; padding: 60px 40px; text-align: center; }
+        .type-header h1 { font-size: 2.8rem; font-weight: 700; margin-bottom: 15px; }
+        .type-header p { font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto; }
+        .type-cards { padding: 50px 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .type-card { background: white; border-radius: 20px; padding: 40px 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: all 0.4s ease; border: 3px solid transparent; text-decoration: none !important; color: inherit; display: block; position: relative; overflow: hidden; }
+        .type-card:hover { transform: translateY(-15px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .type-card.loan { border-color: var(--secondary); }
+        .type-card.loan:hover { background: linear-gradient(135deg, var(--secondary), #2980b9); color: white; }
+        .type-card.fund { border-color: var(--accent); }
+        .type-card.fund:hover { background: linear-gradient(135deg, var(--accent), #27ae60); color: white; }
+        .type-card.charity { border-color: #f39c12; }
+        .type-card.charity:hover { background: linear-gradient(135deg, #f39c12, #d68910); color: white; }
+        .type-icon { width: 100px; height: 100px; background: linear-gradient(135deg, var(--light), white); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; font-size: 45px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); transition: all 0.4s ease; }
+        .type-title { font-size: 26px; font-weight: 700; margin-bottom: 20px; color: var(--primary); transition: all 0.3s ease; }
+        .type-desc { color: #666; font-size: 1rem; line-height: 1.6; margin-bottom: 25px; transition: all 0.3s ease; }
+        .type-card:hover .type-title, .type-card:hover .type-desc { color: white; }
+        .back-link { display: inline-flex; align-items: center; gap: 10px; color: var(--primary); text-decoration: none; font-weight: 600; margin: 30px 0; padding: 12px 25px; background: var(--light); border-radius: 50px; transition: all 0.3s ease; }
+        .back-link:hover { background: var(--secondary); color: white; transform: translateX(-5px); }
+        .type-footer { text-align: center; padding: 30px; background: var(--light); border-top: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="type-container">
+    <div class="type-header">
+        <h1>Start Your Project Journey</h1>
+        <p>Choose the funding model that best fits your vision. Each option offers unique benefits for your project.</p>
+    </div>
+
+    <!-- استخدم form مع POST لتخزين النوع بالـ session -->
+    <form th:action="@{/create-project/choose-type}" method="post">
+        <div class="type-cards">
+            <button type="submit" name="type" value="LOAN" class="type-card loan">
+                <div class="type-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                <h3 class="type-title">Business Loan</h3>
+                <p class="type-desc">Secure funding for your business venture and repay with fixed interest over a set period.</p>
+            </button>
+            <button type="submit" name="type" value="FUND" class="type-card fund">
+                <div class="type-icon"><i class="fas fa-chart-line"></i></div>
+                <h3 class="type-title">Investment Fund</h3>
+                <p class="type-desc">Raise capital in exchange for equity or revenue sharing. Perfect for high-growth potential projects.</p>
+            </button>
+            <button type="submit" name="type" value="CHARITY" class="type-card charity">
+                <div class="type-icon"><i class="fas fa-heart"></i></div>
+                <h3 class="type-title">Charity Project</h3>
+                <p class="type-desc">Collect donations for social causes and make a positive impact without repayment obligations.</p>
+            </button>
+        </div>
+    </form>
+
+    <div class="type-footer">
+        <a th:href="@{/}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Hover effects
+    document.querySelectorAll('.type-card').forEach(card => {
+        card.addEventListener('mouseenter', () => card.style.zIndex = '10');
+        card.addEventListener('mouseleave', () => card.style.zIndex = '1');
+    });
+    // Click animation
+    document.querySelectorAll('.type-card').forEach(card => {
+        card.addEventListener('click', () => {
+            card.style.transform = 'scale(0.98)';
+            setTimeout(() => card.style.transform = '', 150);
+        });
+    });
+</script>
+</body>
+</html>
+

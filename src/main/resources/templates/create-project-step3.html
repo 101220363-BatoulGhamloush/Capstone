@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Project - Step 3 | OpportuGrow</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* نفس الـ styles اللي في Step 1 و 2 */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #2ecc71;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 76px;
+            min-height: 100vh;
+        }
+
+        /* Main Container */
+        .creation-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .creation-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .project-type-badge {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .creation-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .creation-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Step Progress Bar */
+        .step-progress {
+            padding: 40px;
+            background: white;
+            border-bottom: 1px solid var(--light);
+        }
+
+        .step-tracker {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .step-tracker::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50px;
+            right: 50px;
+            height: 4px;
+            background: var(--light);
+            z-index: 1;
+        }
+
+        .step-item {
+            text-align: center;
+            z-index: 2;
+            position: relative;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 45px;
+            height: 45px;
+            background: var(--light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-weight: 700;
+            color: #666;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            border: 3px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .step-item.completed .step-circle {
+            background: var(--accent);
+            color: white;
+        }
+
+        .step-item.active .step-circle {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .step-item.completed .step-label {
+            color: var(--accent);
+        }
+
+        .step-item.active .step-label {
+            color: var(--secondary);
+        }
+
+        /* Form Container */
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .form-title {
+            color: var(--primary);
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        /* File Upload Styles */
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 20px;
+            padding: 60px 30px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--secondary);
+            background: rgba(52, 152, 219, 0.05);
+            transform: translateY(-5px);
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover .upload-icon {
+            transform: scale(1.1);
+            color: var(--accent);
+        }
+
+        .upload-text h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .upload-text p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Preview Container */
+        .preview-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .image-preview {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .preview-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-remove {
+            background: rgba(231, 76, 60, 0.8);
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove:hover {
+            background: #e74c3c;
+        }
+
+        /* Video URL Input */
+        .video-input-group {
+            margin-top: 30px;
+        }
+
+        .video-icon {
+            background: var(--light);
+            border: 2px solid #e0e0e0;
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+            color: var(--secondary);
+        }
+
+        /* Gallery Section */
+        .gallery-section {
+            margin-top: 40px;
+        }
+
+        .gallery-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .gallery-upload {
+            border: 2px dashed #ddd;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-upload:hover {
+            border-color: var(--accent);
+            background: rgba(46, 204, 113, 0.05);
+        }
+
+        .gallery-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .gallery-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 40px;
+            border-top: 1px solid var(--light);
+        }
+
+        .btn-custom {
+            padding: 14px 35px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-back {
+            background: white;
+            color: var(--primary);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-back:hover {
+            background: var(--light);
+            border-color: var(--secondary);
+            color: var(--secondary);
+            transform: translateX(-5px);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            border: none;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .creation-container {
+                margin: 20px auto;
+                border-radius: 20px;
+            }
+
+            .creation-header {
+                padding: 40px 20px;
+            }
+
+            .form-container {
+                padding: 30px 20px;
+            }
+
+            .step-tracker::before {
+                left: 30px;
+                right: 30px;
+            }
+
+            .step-label {
+                font-size: 13px;
+            }
+
+            .upload-area {
+                padding: 40px 20px;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .btn-custom {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .gallery-preview {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+
+        /* File Requirements */
+        .requirements {
+            background: var(--light);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .requirements-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .requirement-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .requirement-item i {
+            color: var(--accent);
+            margin-top: 2px;
+        }
+
+        /* Loading Animation */
+        .upload-progress {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--light);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation Bar -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<!-- Main Container -->
+<div class="creation-container">
+    <!-- Header -->
+    <div class="creation-header">
+        <div class="project-type-badge">
+            <i class="fas fa-images"></i>
+            <span>Media & Story</span>
+        </div>
+        <h1>Bring Your Project to Life</h1>
+        <p>Add images and videos to make your project more engaging and trustworthy.</p>
+    </div>
+
+    <!-- Step Progress -->
+    <div class="step-progress">
+        <div class="step-tracker">
+            <div class="step-item completed">
+                <div class="step-circle">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="step-label">Basic Info</div>
+            </div>
+            <div class="step-item completed">
+                <div class="step-circle">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="step-label">Funding Details</div>
+            </div>
+            <div class="step-item active">
+                <div class="step-circle">3</div>
+                <div class="step-label">Media & Story</div>
+            </div>
+            <div class="step-item">
+                <div class="step-circle">4</div>
+                <div class="step-label">Review & Submit</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-container">
+        <form method="post" enctype="multipart/form-data"
+              th:action="@{/create-project/step3}"
+              th:object="${projectRegister}"
+              id="step3Form">
+
+            <!-- Section 1: Main Image -->
+            <div class="form-section">
+                <h3 class="form-title">
+                    <i class="fas fa-image"></i> Main Project Image
+                </h3>
+
+                <p class="text-muted mb-4">
+                    Choose a high-quality cover image that represents your project. This will be the first thing people see.
+                </p>
+
+                <!-- Upload Area -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <h4>Drag & Drop or Click to Upload</h4>
+                        <p>PNG, JPG, or WebP • Max 5MB • Recommended: 1200×600px</p>
+                        <button type="button" class="btn-upload" onclick="document.getElementById('imageFile').click()">
+                            <i class="fas fa-upload"></i> Choose Image
+                        </button>
+                    </div>
+                    <input type="file"
+                           name="imageFile"
+                           class="file-input"
+                           id="imageFile"
+                           accept="image/*"
+                           style="display: none;">
+
+                </div>
+
+                <!-- Upload Progress -->
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="text-center text-muted" id="progressText">Uploading...</div>
+                </div>
+
+                <!-- Image Preview -->
+                <div class="preview-container" id="previewContainer">
+                    <div class="preview-title">Preview</div>
+                    <div class="image-preview">
+                        <img id="previewImage" src="#" alt="Preview">
+                        <div class="preview-overlay">
+                            <span id="fileName">image.jpg</span>
+                            <button type="button" class="btn-remove" onclick="removeImage()">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Project Gallery -->
+            <div class="form-section">
+                <h3 class="form-title">
+                    <i class="fas fa-images"></i> Project Gallery
+                </h3>
+
+                <p class="text-muted mb-4">
+                    Add additional images to show different aspects of your project. You can upload up to 5 images.
+                </p>
+
+                <div class="gallery-upload" onclick="document.getElementById('galleryFiles').click()">
+                    <i class="fas fa-plus-circle fa-2x text-muted mb-3"></i>
+                    <p class="text-muted">Click to add more images</p>
+                    <small class="text-muted">Drag & drop or click to upload multiple files</small>
+                </div>
+
+                <input type="file" class="file-input" id="galleryFiles"
+                       accept="image/*" multiple style="display: none;">
+
+                <!-- Gallery Preview -->
+                <div class="gallery-preview" id="galleryPreview"></div>
+            </div>
+
+            <!-- Section 3: Video URL -->
+            <div class="form-section">
+                <h3 class="form-title">
+                    <i class="fas fa-video"></i> Project Video (Optional)
+                </h3>
+
+                <p class="text-muted mb-4">
+                    Add a YouTube or Vimeo video to explain your project. Videos increase engagement by 30%.
+                </p>
+
+                <div class="video-input-group">
+                    <div class="input-group">
+                            <span class="input-group-text video-icon">
+                                <i class="fab fa-youtube"></i>
+                            </span>
+                        <input type="url" class="form-control" id="videoUrl"
+                               placeholder="https://youtube.com/watch?v=..."
+                               pattern="https?://(www\.)?(youtube\.com|vimeo\.com)/.+">
+                    </div>
+                    <div class="form-text">
+                        Paste a YouTube or Vimeo link. Make sure your video is public.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requirements -->
+            <div class="requirements">
+                <div class="requirements-title">
+                    <i class="fas fa-info-circle"></i> Image Requirements
+                </div>
+                <div class="requirement-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Format: JPG, PNG, or WebP</span>
+                </div>
+                <div class="requirement-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Max size: 5MB per image</span>
+                </div>
+                <div class="requirement-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Recommended: 1200×600 pixels</span>
+                </div>
+                <div class="requirement-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Avoid text-heavy or blurry images</span>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="nav-buttons">
+                <a th:href="@{/create-project/step2}" class="btn-custom btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Funding Details
+                </a>
+                <button type="submit" class="btn-custom btn-next" id="submitBtn">
+                    Continue to Review <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    // Elements
+    const uploadArea = document.getElementById('uploadArea');
+    const imageFileInput = document.getElementById('imageFile');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImage = document.getElementById('previewImage');
+    const fileName = document.getElementById('fileName');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const galleryFilesInput = document.getElementById('galleryFiles');
+    const galleryPreview = document.getElementById('galleryPreview');
+    const videoUrlInput = document.getElementById('videoUrl');
+
+    // Handle main image upload
+    imageFileInput.addEventListener('change', function(e) {
+        const file = this.files[0];
+        if (file) {
+            // Validate file
+            if (!validateImageFile(file)) return;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                fileName.textContent = file.name;
+                previewContainer.style.display = 'block';
+
+                // Simulate upload progress
+                simulateUploadProgress();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Drag & drop for upload area
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            imageFileInput.files = e.dataTransfer.files;
+            imageFileInput.dispatchEvent(new Event('change'));
+        } else {
+            alert('Please drop an image file (JPG, PNG, or WebP)');
+        }
+    });
+
+    // Click on upload area
+    uploadArea.addEventListener('click', function() {
+        imageFileInput.click();
+    });
+
+    // Remove image
+    window.removeImage = function() {
+        imageFileInput.value = '';
+        previewContainer.style.display = 'none';
+        uploadProgress.style.display = 'none';
+    };
+
+    // Handle gallery images
+    galleryFilesInput.addEventListener('change', function(e) {
+        const files = Array.from(this.files);
+        let validFiles = [];
+
+        files.forEach(file => {
+            if (validateImageFile(file)) {
+                validFiles.push(file);
+            }
+        });
+
+        // Limit to 5 images
+        if (validFiles.length > 5) {
+            alert('You can only upload up to 5 gallery images');
+            validFiles = validFiles.slice(0, 5);
+        }
+
+        // Update gallery preview
+        updateGalleryPreview(validFiles);
+    });
+
+    // Validate image file
+    function validateImageFile(file) {
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+
+        if (!validTypes.includes(file.type)) {
+            alert('Please select an image file (JPG, PNG, or WebP)');
+            return false;
+        }
+
+        if (file.size > maxSize) {
+            alert('Image size should be less than 5MB');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Simulate upload progress
+    function simulateUploadProgress() {
+        uploadProgress.style.display = 'block';
+        let progress = 0;
+
+        const interval = setInterval(() => {
+            progress += 10;
+            progressFill.style.width = progress + '%';
+
+            if (progress <= 30) {
+                progressText.textContent = 'Checking file...';
+            } else if (progress <= 70) {
+                progressText.textContent = 'Uploading...';
+            } else if (progress <= 90) {
+                progressText.textContent = 'Processing image...';
+            } else {
+                progressText.textContent = 'Upload complete!';
+                clearInterval(interval);
+
+                // Hide progress after a delay
+                setTimeout(() => {
+                    uploadProgress.style.display = 'none';
+                }, 1000);
+            }
+        }, 100);
+    }
+
+    // Update gallery preview
+    function updateGalleryPreview(files) {
+        galleryPreview.innerHTML = '';
+
+        files.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                galleryItem.innerHTML = `
+                    <img src="${e.target.result}" alt="Gallery image ${index + 1}">
+                    <button type="button" class="gallery-remove" onclick="removeGalleryImage(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                galleryPreview.appendChild(galleryItem);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Remove gallery image
+    window.removeGalleryImage = function(index) {
+        // Create new FileList without the removed file
+        const dt = new DataTransfer();
+        const files = Array.from(galleryFilesInput.files);
+
+        files.forEach((file, i) => {
+            if (i !== index) {
+                dt.items.add(file);
+            }
+        });
+
+        galleryFilesInput.files = dt.files;
+        updateGalleryPreview(Array.from(dt.files));
+    };
+
+    // Form validation
+    document.getElementById('step3Form').addEventListener('submit', function(e) {
+        const mainImage = imageFileInput.files[0];
+        const videoUrl = videoUrlInput.value;
+
+        // Check if main image is uploaded
+        if (!mainImage) {
+            e.preventDefault();
+            alert('Please upload a main project image');
+            uploadArea.style.borderColor = '#e74c3c';
+            setTimeout(() => {
+                uploadArea.style.borderColor = '';
+            }, 2000);
+            return;
+        }
+
+        // Validate video URL if provided
+        if (videoUrl && !isValidVideoUrl(videoUrl)) {
+            e.preventDefault();
+            alert('Please enter a valid YouTube or Vimeo URL');
+            videoUrlInput.focus();
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+    });
+
+    // Validate video URL
+    function isValidVideoUrl(url) {
+        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+        const vimeoRegex = /^(https?:\/\/)?(www\.)?vimeo\.com\/.+$/;
+        return youtubeRegex.test(url) || vimeoRegex.test(url);
+    }
+
+    // Auto-preview video thumbnail (optional enhancement)
+    videoUrlInput.addEventListener('blur', function() {
+        if (this.value && isValidVideoUrl(this.value)) {
+            // Could add video thumbnail preview here
+            console.log('Valid video URL:', this.value);
+        }
+    });
+</script>
+</body>
+</html>
