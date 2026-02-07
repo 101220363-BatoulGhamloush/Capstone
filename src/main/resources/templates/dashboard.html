@@ -3,110 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - OpportuGrow</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>Analytics Dashboard | OpportuGrow</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #2ecc71;
-            --light: #ecf0f1;
-            --gray: #95a5a6;
+            --primary-color: #2d6a4f;
+            --accent-color: #52b788;
+            --bg-light: #f1f3f5;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding-top: 70px; }
 
-        /* Dashboard Stats */
-        .stats-card { border-radius: 15px; padding: 20px; color: white; transition: all 0.3s; }
-        .stats-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .stats-icon { font-size: 2rem; }
-        .stats-title { font-size: 1rem; opacity: 0.8; }
-        .stats-number { font-size: 1.6rem; font-weight: 700; }
+        body {
 
-        /* Project Cards */
-        .project-card { border-radius: 15px; overflow: hidden; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: all 0.3s; }
-        .project-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .project-image { height: 180px; overflow: hidden; position: relative; }
-        .project-image img { width: 100%; height: 100%; object-fit: cover; }
-        .progress-fill { height: 8px; background: var(--accent); border-radius: 4px; }
+            background-color: var(--bg-light);
+            color: #2d3436;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* تحسين مظهر الـ Navbar المستدعى */
+        nav {
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+
+        /* Stat Boxes */
+        .stat-box {
+            background: white;
+            border: none;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+        .stat-box:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+
+        .icon-shape {
+            width: 54px;
+            height: 54px;
+            background: rgba(45, 106, 79, 0.08);
+            color: var(--primary-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .progress { height: 10px; border-radius: 20px; background-color: #e9ecef; }
+        .text-success-custom { color: #2d6a4f; }
     </style>
 </head>
 <body>
 
-<!-- Navbar -->
-<div th:replace="fragments/navbar :: navbar"></div>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<div class="container">
-
-    <!-- Dashboard Stats -->
-    <div class="row mb-4 g-4">
-        <div class="col-md-3">
-            <div class="stats-card bg-primary text-center">
-                <i class="fas fa-project-diagram stats-icon"></i>
-                <div class="stats-title">My Projects</div>
-                <div class="stats-number" th:text="${myProjects.size()}">0</div>
-            </div>
+<div class="container py-4 mt-5">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-dark">Enterprise <span class="text-success-custom">Analytics</span></h2>
+            <p class="text-muted">Welcome back! Here's what's happening with your projects today.</p>
         </div>
-        <div class="col-md-3">
-            <div class="stats-card bg-secondary text-center">
-                <i class="fas fa-globe stats-icon"></i>
-                <div class="stats-title">Total Projects</div>
-                <div class="stats-number" th:text="${totalProjects}">0</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stats-card bg-success text-center">
-                <i class="fas fa-dollar-sign stats-icon"></i>
-                <div class="stats-title">Total Raised</div>
-                <div class="stats-number" th:text="${totalRaised}">$0</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stats-card bg-warning text-center">
-                <i class="fas fa-users stats-icon"></i>
-                <div class="stats-title">Users</div>
-                <div class="stats-number" th:text="${totalUsers}">0</div>
+            <div class="col-md-4 text-md-end">
+                <button class="btn btn-success px-4" style="background-color: var(--primary-color);" onclick="window.print()">
+                    <i class="fas fa-file-export me-2"></i>Export Analytics Report
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- User Projects -->
-    <h3 class="mb-3">My Projects</h3>
-    <div class="row g-4">
-        <div th:if="${#lists.isEmpty(myProjects)}" class="col-12">
-            <div class="alert alert-info text-center p-5">
-                <i class="fas fa-info-circle fa-3x mb-3"></i>
-                <h4>No projects yet!</h4>
-                <p>Start creating your first project to showcase your ideas.</p>
-                <a th:href="@{/create-project/choose-type}" class="btn btn-primary">Create Project</a>
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="stat-box">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-shape"><i class="fas fa-rocket"></i></div>
+                    <span class="badge bg-success-subtle text-success">+5.2%</span>
+                </div>
+                <small class="text-muted fw-medium">Active Projects</small>
+                <h3 class="fw-bold mb-0" th:text="${activeCount}">0</h3>
             </div>
         </div>
-
-        <div th:each="project : ${myProjects}" class="col-lg-4 col-md-6">
-            <div class="project-card">
-                <div class="project-image">
-                    <img th:if="${project.imageUrl != null}" th:src="@{${project.imageUrl}}" alt="Project Image">
-                    <div th:if="${project.imageUrl == null}" style="width:100%; height:100%; background:linear-gradient(45deg, #3498db, #2ecc71); display:flex; align-items:center; justify-content:center; color:white;">
-                        <i class="fas fa-lightbulb" style="font-size:3rem;"></i>
-                    </div>
+        <div class="col-md-3">
+            <div class="stat-box">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-shape" style="color: #0ea5e9; background: rgba(14, 165, 233, 0.1);"><i class="fas fa-user-friends"></i></div>
+                    <span class="badge bg-info-subtle text-info">Live</span>
                 </div>
-                <div class="p-3">
-                    <h5 th:text="${project.title}">Project Title</h5>
-                    <p class="mb-2" th:text="${project.shortDescription}">Short description...</p>
-                    <div class="mb-2">
-                        <div class="progress">
-                            <div class="progress-fill" th:style="'width:' + ${project.fundingPercent} + '%'"></div>
-                        </div>
-                        <small th:text="${project.fundingPercent} + '%'">0%</small>
-                    </div>
-                    <a th:href="@{/projects/{id}(id=${project.id})}" class="btn btn-sm btn-outline-primary w-100">View Project</a>
+                <small class="text-muted fw-medium">Platform Users</small>
+                <h3 class="fw-bold mb-0" th:text="${totalUsers}">0</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-shape" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);"><i class="fas fa-video"></i></div>
+                    <span class="badge bg-warning-subtle text-warning">Pending</span>
                 </div>
+                <small class="text-muted fw-medium">Total Meetings</small>
+                <h3 class="fw-bold mb-0" th:text="${totalMeetings}">0</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-shape" style="color: #10b981; background: rgba(16, 185, 129, 0.1);"><i class="fas fa-trophy"></i></div>
+                    <span class="badge bg-success-subtle text-success">100%</span>
+                </div>
+                <small class="text-muted fw-medium">Goals Completed</small>
+                <h3 class="fw-bold mb-0" th:text="${completedCount}">0</h3>
             </div>
         </div>
     </div>
 
+    <div class="row g-4 mb-5">
+        <div class="col-lg-4">
+            <div class="stat-box h-100">
+                <h6 class="fw-bold mb-4"><i class="fas fa-chart-pie me-2 text-success"></i>Funding Distribution</h6>
+                <div class="chart-container"><canvas id="fundingTypeChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="stat-box h-100">
+                <h6 class="fw-bold mb-4"><i class="fas fa-bullseye me-2 text-primary"></i>Project Velocity</h6>
+                <div class="chart-container"><canvas id="statusPolarChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="stat-box h-100">
+                <h6 class="fw-bold mb-4"><i class="fas fa-chart-line me-2 text-info"></i>Engagement Over Time</h6>
+                <div class="chart-container"><canvas id="meetingLineChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="table-container mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0">Project Performance Audit</h5>
+
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th class="border-0">Project Detail</th>
+                            <th class="border-0">Category</th>
+                            <th class="border-0">Target</th>
+                            <th class="border-0">Raised</th>
+                            <th class="border-0">Fulfillment</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="p : ${myProjects}">
+                            <td>
+                                <div class="fw-bold text-dark" th:text="${p.title}">Project Title</div>
+                                <small class="text-muted">ID: #00[[${p.id}]]</small>
+                            </td>
+                            <td><span class="badge bg-light text-success border border-success-subtle" th:text="${p.type}">Type</span></td>
+                            <td class="fw-medium text-dark" th:text="'$' + ${#numbers.formatDecimal(p.fundingGoal, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td class="text-success-custom fw-bold" th:text="'$' + ${#numbers.formatDecimal(p.raisedAmount, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-3">
+                                        <div class="progress-bar" role="progressbar"
+                                             th:style="|width: ${(p.fundingGoal > 0 ? (p.raisedAmount / p.fundingGoal) * 100 : 0)}%; background-color: var(--primary-color);|"></div>
+                                    </div>
+                                    <small class="fw-bold text-muted" th:text="${#numbers.formatDecimal((p.fundingGoal > 0 ? (p.raisedAmount / p.fundingGoal) * 100 : 0), 1, 0)} + '%'">0%</small>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const valLoan = [[${loanCount}]] || 0;
+    const valFund = [[${fundCount}]] || 0;
+    const valCharity = [[${charityCount}]] || 0;
+    const valActive = [[${activeCount}]] || 0;
+    const valCompleted = [[${completedCount}]] || 0;
+    const valMeetings = [[${myMeetings}]] || 0;
+
+    // Chart Options Common
+    const commonOptions = {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { usePointStyle: true, padding: 20, font: { size: 12 } }
+            }
+        }
+    };
+
+    // Chart 1: Funding Type
+    new Chart(document.getElementById('fundingTypeChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Loan', 'Fund', 'Charity'],
+            datasets: [{
+                data: [valLoan, valFund, valCharity],
+                backgroundColor: ['#1b4332', '#2d6a4f', '#74c69d'],
+                borderWidth: 5,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: { ...commonOptions, cutout: '75%' }
+    });
+
+    // Chart 2: Status Polar
+    new Chart(document.getElementById('statusPolarChart'), {
+        type: 'polarArea',
+        data: {
+            labels: ['Active Projects', 'Completed Goals'],
+            datasets: [{
+                data: [valActive, valCompleted],
+                backgroundColor: ['rgba(82, 183, 136, 0.6)', 'rgba(27, 67, 50, 0.6)'],
+                borderWidth: 2
+            }]
+        },
+        options: commonOptions
+    });
+
+    // Chart 3: Line Chart
+    new Chart(document.getElementById('meetingLineChart'), {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+                label: 'Engagement Activity',
+                data: [valMeetings + 2, valMeetings + 5, valMeetings + 3, valMeetings],
+                borderColor: '#2d6a4f',
+                backgroundColor: 'rgba(45, 106, 79, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#2d6a4f'
+            }]
+        },
+        options: commonOptions
+    });
+    /*]]>*/
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

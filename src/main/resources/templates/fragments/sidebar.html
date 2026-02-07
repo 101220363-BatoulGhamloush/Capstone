@@ -1,6 +1,10 @@
 <div th:fragment="sidebar" xmlns:th="http://www.w3.org/1999/xhtml">
     <div class="sidebar">
-        <h2>Admin</h2>
+        <div style="padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px;">
+            <h4 style="color: white; font-weight: bold; letter-spacing: 1px;">
+                <i class="bi bi-shield-lock me-2"></i> ADMIN
+            </h4>
+        </div>
         <a th:href="@{/admin/dashboard}" th:classappend="${activePage=='dashboard'} ? 'active'">
             <i class="bi bi-speedometer2"></i> Dashboard
         </a>

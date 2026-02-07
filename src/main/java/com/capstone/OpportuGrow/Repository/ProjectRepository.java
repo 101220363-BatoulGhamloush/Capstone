@@ -15,6 +15,17 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByConsultantId(int consultantId);
 
     List<Project> findByConsultantIsNull();
+    // تجلب المشاريع التي حالتها ضمن القائمة (مثلاً APPROVED و COMPLETED)
+    List<Project> findByStatusIn(List<ProjectStatus> statuses);
+
+    // البحث مع نوع المشروع وحالاته
+    List<Project> findByStatusInAndType(List<ProjectStatus> statuses, ProjectType type);
+
+    // البحث بكلمة مفتاحية وحالاته
+    List<Project> findByStatusInAndTitleContainingIgnoreCase(List<ProjectStatus> statuses, String keyword);
+
+    // البحث بالكل معاً
+    List<Project> findByStatusInAndTypeAndTitleContainingIgnoreCase(List<ProjectStatus> statuses, ProjectType type, String keyword);
 
     List<Project> findByType (ProjectType  type);
     long countByStatus(ProjectStatus status);

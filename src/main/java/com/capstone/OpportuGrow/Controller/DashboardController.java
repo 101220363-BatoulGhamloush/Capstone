@@ -1,7 +1,9 @@
 package com.capstone.OpportuGrow.Controller;
 
+import com.capstone.OpportuGrow.Repository.AppointmentRepository;
 import com.capstone.OpportuGrow.Repository.ProjectRepository;
 import com.capstone.OpportuGrow.Repository.UserRepository;
+import com.capstone.OpportuGrow.model.Appointment;
 import com.capstone.OpportuGrow.model.Project;
 import com.capstone.OpportuGrow.model.User;
 import org.springframework.stereotype.Controller;
@@ -18,44 +20,38 @@ import java.util.Optional;
 public class DashboardController {
     private final ProjectRepository projectRepository;
     private UserRepository userRepository;
+    private AppointmentRepository appointmentRepository;
 
-    public DashboardController(ProjectRepository projectRepository, UserRepository userRepository) {
+    public DashboardController(AppointmentRepository appointmentRepository,ProjectRepository projectRepository, UserRepository userRepository) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
+        this.appointmentRepository=appointmentRepository;
     }
 
     @GetMapping("/dashboard")
     public String userDashboard(Model model, Principal principal) {
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow();
+        List<Project> allProjects = projectRepository.findAll();
+        List<Project> myProjects = projectRepository.findByOwner(user);
 
-        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
+        // 1. إحصائيات حسب نوع التمويل (Loan vs Fund vs Charity)
+        model.addAttribute("loanCount", myProjects.stream().filter(p -> "Loan".equalsIgnoreCase(String.valueOf(p.getType()))).count());
+        model.addAttribute("fundCount", myProjects.stream().filter(p -> "Fund".equalsIgnoreCase(String.valueOf(p.getType()))).count());
+        model.addAttribute("charityCount", myProjects.stream().filter(p -> "Charity".equalsIgnoreCase(String.valueOf(p.getType()))).count());
 
-        // عرف المتغير هون
-        List<Project> myProjects;
+        // 2. إحصائيات حالة المشاريع (Status)
+        long completed = myProjects.stream().filter(p -> p.getRaisedAmount() >= p.getFundingGoal()).count();
+        long active = myProjects.size() - completed;
+        model.addAttribute("completedCount", completed);
+        model.addAttribute("activeCount", active);
 
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get(); // فك الـ Optional
-            myProjects = projectRepository.findByOwner(user);
-        } else {
-            // حال ما لقينا المستخدم
-            myProjects = Collections.emptyList();
-        }
+        // 3. إحصائيات المستخدمين والاجتماعات (Platform Level)
+        model.addAttribute("totalUsers", userRepository.count());
+        model.addAttribute("totalMeetings", appointmentRepository.count());
+        model.addAttribute("myMeetings", appointmentRepository.findByUserOrderByDateAscTimeAsc(user).size());
 
-        // إحصائيات شخصية
-        int myProjectsCount = myProjects.size();
-        double myTotalRaised = myProjects.stream().mapToDouble(Project::getRaisedAmount).sum();
-
-        // إحصائيات عامة للموقع
-        long totalProjects = projectRepository.count();
-        long totalUsers = userRepository.count();
-        double totalRaised = projectRepository.findAll().stream().mapToDouble(Project::getRaisedAmount).sum();
-
+        model.addAttribute("user", user);
         model.addAttribute("myProjects", myProjects);
-        model.addAttribute("myProjectsCount", myProjectsCount);
-        model.addAttribute("myTotalRaised", myTotalRaised);
-
-        model.addAttribute("totalProjects", totalProjects);
-        model.addAttribute("totalUsers", totalUsers);
-        model.addAttribute("totalRaised", totalRaised);
 
         return "dashboard";
     }

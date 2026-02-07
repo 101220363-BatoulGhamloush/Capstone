@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,12 +28,10 @@
             min-height:100vh;
         }
 
-        /* Hero + Search */
         .hero-browse {
             text-align:center;
             margin-bottom:40px;
             padding: 30px 0;
-            position: relative;
             background: linear-gradient(90deg, rgba(44,62,80,0.05) 0%, rgba(52,152,219,0.05) 100%);
             border-radius: 20px;
             margin-top: 20px;
@@ -48,54 +46,25 @@
             overflow: hidden;
         }
 
-        .search-input {
-            flex:1;
-            padding:18px 25px;
-            border:none;
-            outline:none;
-        }
+        .search-input { flex:1; padding:18px 25px; border:none; outline:none; }
+        .search-btn { background: var(--gradient); color:white; border:none; padding:0 30px; font-weight:600; }
 
-        .search-btn {
-            background: var(--gradient);
-            color:white;
-            border:none;
-            padding:0 30px;
-            font-weight:600;
-        }
-
-        /* Filter Badges */
         .filter-badges {
-            display:flex;
-            flex-wrap:wrap;
-            gap:12px;
-            justify-content:center;
-            margin-bottom:40px;
-            padding: 20px;
-            background: white;
-            border-radius: 15px;
-            position: sticky;
-            top: 90px;
-            z-index: 10;
+            display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
+            margin-bottom:40px; padding: 20px; background: white;
+            border-radius: 15px; position: sticky; top: 90px; z-index: 10;
         }
 
         .filter-badge {
-            padding:10px 22px;
-            border-radius:30px;
-            background:white;
-            color:var(--primary);
-            text-decoration:none;
-            border:2px solid #eaeaea;
-            font-weight:600;
-            transition: 0.3s;
+            padding:10px 22px; border-radius:30px; background:white;
+            color:var(--primary); text-decoration:none; border:2px solid #eaeaea;
+            font-weight:600; transition: 0.3s;
         }
 
         .filter-badge.active, .filter-badge:hover {
-            background: var(--gradient);
-            color: white;
-            border-color: transparent;
+            background: var(--gradient); color: white; border-color: transparent;
         }
 
-        /* Project Card */
         .projects-grid {
             display:grid;
             grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
@@ -103,14 +72,16 @@
         }
 
         .project-card {
-            background:white;
-            border-radius:20px;
-            overflow:hidden;
-            box-shadow:var(--shadow);
-            transition: 0.4s;
-            display:flex;
-            flex-direction:column;
-            height: 100%;
+            background:white; border-radius:20px; overflow:hidden;
+            box-shadow:var(--shadow); transition: 0.4s;
+            display:flex; flex-direction:column; height: 100%;
+            position: relative;
+        }
+
+        /* ستايل خاص للمشاريع المكتملة */
+        .project-card.is-funded {
+            border: 2px solid var(--accent);
+            box-shadow: 0 10px 30px rgba(46, 204, 113, 0.15);
         }
 
         .project-card:hover { transform: translateY(-10px); }
@@ -118,127 +89,156 @@
         .project-image { height:200px; position:relative; overflow: hidden; }
         .project-image img { width:100%; height:100%; object-fit:cover; }
 
-        .category-badge {
-            position:absolute;
-            top:15px;
-            left:15px;
-            background:rgba(255,255,255,0.9);
-            padding:5px 15px;
-            border-radius:20px;
-            font-weight:700;
-            font-size:0.8rem;
+        .funded-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(46, 204, 113, 0.1); display: flex;
+            align-items: center; justify-content: center;
         }
 
-        .project-content { padding:25px; flex-grow:1; }
+        .category-badge {
+            position:absolute; top:15px; left:15px;
+            background:rgba(255,255,255,0.9); padding:5px 15px;
+            border-radius:20px; font-weight:700; font-size:0.8rem; z-index: 2;
+        }
 
-        .progress { height:10px; border-radius:10px; margin-bottom:10px; }
+        .project-content { padding:25px; flex-grow:1; display: flex; flex-direction: column; }
+        .progress { height:10px; border-radius:10px; margin-bottom:10px; background: #eee; }
         .progress-bar { background: var(--gradient); }
+        .progress-bar.bg-funded { background: var(--accent); }
 
         .interaction-btn {
-            flex:1;
-            padding:10px;
-            border-radius:10px;
-            border:1px solid #eee;
-            background:white;
-            font-weight: 600;
-            text-decoration: none;
-            text-align: center;
-            color: var(--primary);
-            transition: 0.3s;
+            flex:1; padding:10px; border-radius:10px;
+            border:1px solid #eee; background:white;
+            font-weight: 600; text-decoration: none;
+            text-align: center; color: var(--primary); transition: 0.3s;
         }
 
         .like-btn.liked { color: var(--danger); background: rgba(231,76,60,0.1); }
-
-        .btn-action { color: white !important; }
+        .btn-action { color: white !important; border: none; }
         .btn-charity { background: #e74c3c !important; }
         .btn-fund { background: #2ecc71 !important; }
         .btn-loan { background: #3498db !important; }
+
+        .btn-completed {
+            background: #f8f9fa !important; color: #2ecc71 !important;
+            border: 1px solid #2ecc71 !important; cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<div class="container">
+<div class="container pb-5">
     <div class="hero-browse animate__animated animate__fadeIn">
         <h1>Discover Amazing Projects</h1>
         <form class="search-box" th:action="@{/projects}" method="get">
-            <input type="text" name="keyword" class="search-input" placeholder="Search projects..." th:value="${param.keyword}">
+            <input type="text" name="keyword" class="search-input" placeholder="Search projects..." th:value="${keyword}">
             <button type="submit" class="search-btn">Search</button>
         </form>
     </div>
 
     <div class="filter-badges">
-        <a class="filter-badge" th:href="@{/projects}" th:classappend="${param.type==null}?'active':''">All Types</a>
-        <a th:each="type : ${T(com.capstone.OpportuGrow.model.ProjectType).values()}"
-           class="filter-badge" th:href="@{/projects(type=${type})}"
-           th:classappend="${param.type != null && param.type.toString() == type.toString()}?'active':''"
-           th:text="${type}">Type</a>
+        <a class="filter-badge" th:href="@{/projects}" th:classappend="${type == null}?'active':''">All Types</a>
+        <a th:each="t : ${T(com.capstone.OpportuGrow.model.ProjectType).values()}"
+           class="filter-badge" th:href="@{/projects(type=${t})}"
+           th:classappend="${type == t}?'active':''"
+           th:text="${t}">Type</a>
     </div>
 
     <div class="projects-grid">
-        <div th:each="project : ${projects}" class="project-card">
+        <div th:each="project : ${projects}" class="project-card" th:classappend="${project.fundingPercent >= 100} ? 'is-funded' : ''">
 
             <div class="project-image">
                 <img th:src="${project.imageUrl != null ? project.imageUrl : 'https://via.placeholder.com/400x200'}" alt="Project">
                 <span class="category-badge" th:text="${project.type}">Type</span>
+                <div th:if="${project.fundingPercent >= 100}" class="funded-overlay">
+                    <span class="badge bg-success p-2 px-3 rounded-pill shadow">
+                        <i class="fas fa-check-circle me-1"></i> FULLY FUNDED
+                    </span>
+                </div>
             </div>
 
             <div class="project-content">
                 <h4 class="fw-bold" th:text="${project.title}">Title</h4>
                 <p class="text-muted small" th:text="${project.shortDescription}">Desc</p>
 
-                <div class="funding-progress mt-3">
+                <div class="funding-progress mt-auto">
                     <div class="progress">
-                        <div class="progress-bar" th:style="'width:'+${project.fundingPercent}+'%'"></div>
+                        <div class="progress-bar"
+                             th:classappend="${project.fundingPercent >= 100} ? 'bg-funded' : ''"
+                             th:style="'width:' + ${project.fundingPercent > 100 ? 100 : project.fundingPercent} + '%'"></div>
                     </div>
-                    <div class="d-flex justify-content-between small fw-bold">
+                    <div class="d-flex justify-content-between small fw-bold mb-3">
                         <span th:text="'$' + ${project.raisedAmount}">$0</span>
-                        <span th:text="${project.fundingPercent} + '%'">0%</span>
+                        <span th:classappend="${project.fundingPercent >= 100} ? 'text-success' : ''"
+                              th:text="${project.fundingPercent} + '%'">0%</span>
                     </div>
                 </div>
 
-                <div class="d-flex gap-2 mt-4">
-                    <form th:action="@{/projects/{id}/like(id=${project.id})}" method="post" style="flex:1">
+                <div class="d-flex gap-2">
+                    <form th:action="@{/projects/{id}/like(id=${project.id})}" method="post" style="flex:0.3">
                         <button type="submit" class="interaction-btn like-btn w-100" th:classappend="${project.likedByCurrentUser}?'liked':''">
                             <i th:class="${project.likedByCurrentUser}?'fas fa-heart':'far fa-heart'"></i>
                             <span th:text="${project.likedUsers.size()}">0</span>
                         </button>
                     </form>
 
-                    <button sec:authorize="isAnonymous()"
-                            type="button"
-                            class="interaction-btn btn-action w-100"
-                            th:classappend="${project.type.name() == 'CHARITY' ? 'btn-charity' : (project.type.name() == 'FUND' ? 'btn-fund' : 'btn-loan')}"
-                            onclick="window.location.href='/login'">
-                        <span th:text="${project.type.name() == 'CHARITY' ? 'Donate' : (project.type.name() == 'FUND' ? 'Invest' : 'Loan')}">Action</span>
-                    </button>
+                    <div style="flex:1">
+                        <button th:if="${project.fundingPercent >= 100}" class="interaction-btn btn-completed w-100" disabled>
+                            Success Story
+                        </button>
 
-                    <button sec:authorize="isAuthenticated()"
-                            type="button"
-                            class="interaction-btn btn-action w-100"
-                            th:classappend="${project.type.name() == 'CHARITY' ? 'btn-charity' : (project.type.name() == 'FUND' ? 'btn-fund' : 'btn-loan')}"
-                            th:onclick="'openAmountModal(' + ${project.id} + ')'">
-                        <span th:text="${project.type.name() == 'CHARITY' ? 'Donate' : (project.type.name() == 'FUND' ? 'Invest' : 'Loan')}">Action</span>
-                    </button>
+                        <button th:if="${project.fundingPercent < 100}" sec:authorize="isAnonymous()"
+                                type="button" class="interaction-btn btn-action w-100"
+                                th:classappend="${project.type.name() == 'CHARITY' ? 'btn-charity' : (project.type.name() == 'FUND' ? 'btn-fund' : 'btn-loan')}"
+                                onclick="window.location.href='/login'">
+                            <span th:text="${project.type.name() == 'CHARITY' ? 'Donate' : (project.type.name() == 'FUND' ? 'Invest' : 'Loan')}">Action</span>
+                        </button>
+
+                        <button th:if="${project.fundingPercent < 100}" sec:authorize="isAuthenticated()"
+                                type="button" class="interaction-btn btn-action w-100"
+                                th:classappend="${project.type.name() == 'CHARITY' ? 'btn-charity' : (project.type.name() == 'FUND' ? 'btn-fund' : 'btn-loan')}"
+                                th:onclick="'openAmountModal(' + ${project.id} + ')'">
+                            <span th:text="${project.type.name() == 'CHARITY' ? 'Donate' : (project.type.name() == 'FUND' ? 'Invest' : 'Loan')}">Action</span>
+                        </button>
+                    </div>
                 </div>
 
                 <a th:href="@{/projects/{id}(id=${project.id})}" class="btn btn-outline-dark w-100 mt-2 rounded-3">
-                    <i class="far fa-comment-dots me-1"></i> View & Comment
+                    <i class="far fa-comment-dots me-1"></i> View Details
                 </a>
             </div>
         </div>
     </div>
+
+    <nav th:if="${totalPages > 1}" class="mt-5">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                <a class="page-link" th:href="@{/projects(page=${currentPage - 1}, keyword=${keyword}, type=${type})}">Previous</a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(1, totalPages)}" class="page-item" th:classappend="${i == currentPage} ? 'active'">
+                <a class="page-link" th:href="@{/projects(page=${i}, keyword=${keyword}, type=${type})}" th:text="${i}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                <a class="page-link" th:href="@{/projects(page=${currentPage + 1}, keyword=${keyword}, type=${type})}">Next</a>
+            </li>
+        </ul>
+    </nav>
 </div>
 
 <div th:replace="~{fragments/amount-modal :: amountModal}"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Success Payment Alert
     document.addEventListener('DOMContentLoaded', function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('success') === 'payment_completed') {
-            Swal.fire({ title: 'Success!', text: 'Contribution recorded.', icon: 'success' });
+            Swal.fire({
+                title: 'Impact Made!',
+                text: 'Your contribution has been successfully recorded. Thank you for growing an opportunity!',
+                icon: 'success',
+                confirmButtonColor: '#2ecc71'
+            });
             window.history.replaceState({}, document.title, "/projects");
         }
     });

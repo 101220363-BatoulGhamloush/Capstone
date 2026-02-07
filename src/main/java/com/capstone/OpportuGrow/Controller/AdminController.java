@@ -1,11 +1,9 @@
 package com.capstone.OpportuGrow.Controller;
 import com.capstone.OpportuGrow.Repository.ChatMessageRepository;
 import com.capstone.OpportuGrow.Repository.ProjectRepository;
+import com.capstone.OpportuGrow.Repository.TransactionRepository;
 import com.capstone.OpportuGrow.Repository.UserRepository;
-import com.capstone.OpportuGrow.model.ChatMessage;
-import com.capstone.OpportuGrow.model.Project;
-import com.capstone.OpportuGrow.model.ProjectStatus;
-import com.capstone.OpportuGrow.model.User;
+import com.capstone.OpportuGrow.model.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -28,64 +26,88 @@ import java.time.LocalDate;
 
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final TransactionRepository transactionRepository;
 
-
-    public AdminController(UserRepository userRepository, ProjectRepository projectRepository) {
+    public AdminController(TransactionRepository transactionRepository,UserRepository userRepository, ProjectRepository projectRepository) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
+        this.transactionRepository=transactionRepository;
 
     }
 
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
-        List<Project> projects = projectRepository.findAll();
+        // جلب كل البيانات الأساسية
+        List<Project> allProjects = projectRepository.findAll();
+        List<User> allUsers = userRepository.findAll();
+        List<Transaction> allTransactions = transactionRepository.findAll();
 
-        int totalProjects = projects.size();
-        long totalRaised = projects.stream().mapToLong(Project::getRaisedAmount).sum();
-        // تأكد إن ميثود isActive موجودة بكلاس الـ User
-        long activeUsers = userRepository.findAll().stream().filter(User::isActive).count();
+        // --- [1] إحصائيات سريعة (Top Summary) ---
+        long totalProjects = allProjects.size();
+        double totalRevenue = allTransactions.stream().mapToDouble(Transaction::getAmount).sum();
+        long activeUsers = allUsers.size();
+        long pendingRequests = allProjects.stream().filter(p -> p.getStatus() == ProjectStatus.PENDING).count();
 
-        long pendingProjects = projects.stream().filter(p -> p.getStatus() == ProjectStatus.PENDING).count();
-        long approvedProjects = projects.stream().filter(p -> p.getStatus() == ProjectStatus.APPROVED).count();
-        long rejectedProjects = projects.stream().filter(p -> p.getStatus() == ProjectStatus.REJECTED).count();
+        // --- [2] توزيع المشاريع حسب النوع (Pie Chart) ---
+        long charityCount = allProjects.stream().filter(p -> p.getType() == ProjectType.CHARITY).count();
+        long fundCount = allProjects.stream().filter(p -> p.getType() == ProjectType.FUND).count();
+        long loanCount = allProjects.stream().filter(p -> p.getType() == ProjectType.LOAN).count();
 
-        // Monthly stats
+        // --- [3] توزيع الحالات (Doughnut Chart) ---
+        long approved = allProjects.stream().filter(p -> p.getStatus() == ProjectStatus.APPROVED).count();
+        long completed = allProjects.stream().filter(p -> p.getStatus() == ProjectStatus.COMPLETED).count();
+        long rejected = allProjects.stream().filter(p -> p.getStatus() == ProjectStatus.REJECTED).count();
+
+        // --- [4] تحليل الأشهر (Line & Bar Charts) ---
         int[] projectsPerMonth = new int[12];
-        long[] fundsPerMonth = new long[12];
+        double[] fundsPerMonth = new double[12];
+        int[] usersPerMonth = new int[12];
 
-        projects.forEach(p -> {
+        allProjects.forEach(p -> {
             if (p.getCreatedAt() != null) {
-                // تحويل التاريخ لـ Month Index (0-11)
-                int month = p.getCreatedAt().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .getMonthValue() - 1;
-                projectsPerMonth[month]++;
-                fundsPerMonth[month] += p.getRaisedAmount();
+                int m = p.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).getMonthValue() - 1;
+                projectsPerMonth[m]++;
             }
         });
 
+        // حساب الأموال شهرياً - نسخة LocalDateTime
+        allTransactions.forEach(t -> {
+            if (t.getTimestamp() != null) {
+                // نأخذ رقم الشهر مباشرة وننقص منه 1 ليتناسب مع المصفوفة (0-11)
+                int m = t.getTimestamp().getMonthValue() - 1;
+                fundsPerMonth[m] += t.getAmount();
+            }
+        });
+
+        allUsers.forEach(u -> {
+            if (u.getCreation() != null) {
+                int m = u.getCreation().toInstant().atZone(ZoneId.systemDefault()).getMonthValue() - 1;
+                usersPerMonth[m]++;
+            }
+        });
+
+        // --- [5] حساب الـ Success Rate (Radial/Gauge Chart) ---
+        double successRate = totalProjects > 0 ? ((double) completed / totalProjects) * 100 : 0;
+
+        // --- [6] إرسال البيانات للموديل ---
         model.addAttribute("totalProjects", totalProjects);
-        model.addAttribute("totalRaised", totalRaised);
+        model.addAttribute("totalRevenue", String.format("%.2f", totalRevenue));
         model.addAttribute("activeUsers", activeUsers);
-        model.addAttribute("pendingProjects", pendingProjects);
-        model.addAttribute("approvedProjects", approvedProjects);
-        model.addAttribute("rejectedProjects", rejectedProjects);
+        model.addAttribute("pendingRequests", pendingRequests);
 
-        // تحويل الـ Arrays لـ List كرمال Thymeleaf يقرأهم كـ JSON Arrays بالـ JS
-        model.addAttribute("projectsPerMonth", projectsPerMonth);
-        model.addAttribute("fundsPerMonth", fundsPerMonth);
-        model.addAttribute("months", List.of("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"));
+        // Arrays للرسومات البيانية
+        model.addAttribute("projectsByMonth", projectsPerMonth);
+        model.addAttribute("fundsByMonth", fundsPerMonth);
+        model.addAttribute("usersByMonth", usersPerMonth);
 
-        // حساب الـ Success Rate مع تقريب الرقم (Formatting)
-        double rawSuccessRate = totalProjects > 0 ? ((double) approvedProjects / totalProjects * 100) : 0;
-        model.addAttribute("successRate", Math.round(rawSuccessRate * 10.0) / 10.0);
-
-        model.addAttribute("lastUpdated", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")));
-        model.addAttribute("pageTitle", "Admin Dashboard");
+        // بيانات الـ Pie/Doughnut
+        model.addAttribute("typeData", List.of(charityCount, fundCount, loanCount));
+        model.addAttribute("statusData", List.of(pendingRequests, approved, completed, rejected));
+        model.addAttribute("successRate", Math.round(successRate));
         model.addAttribute("contentTemplate", "admin-dashboard");
 
-        return "admin-layout"; // تأكد إنك عم ترجع الـ Layout الأساسي
-    }; // بدون .html
+        return "admin-layout";
+    }
 
 
 

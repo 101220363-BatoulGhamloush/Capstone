@@ -1,170 +1,237 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+
 <div th:fragment="content">
     <style>
-        .dashboard-wrapper { animation: fadeIn 0.8s ease-out; }
+        /* إلغاء الفراغات الزائدة حول المحتوى ليصبح ملاصقاً للـ Sidebar */
+        .main-content {
+            padding: 0 !important; /* إلغاء الـ Padding من المحتوى الأساسي */
+            background: #f8fafc;
+        }
 
-        /* Stats Cards Enhanced */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
+        .dashboard-container {
+            max-width: 100% !important; /* جعل الحاوية تأخذ العرض الكامل */
+            margin: 0 !important;
+            padding: 25px; /* فراغ داخلي بسيط لراحة العين فقط */
+        }
+
+        .page-header {
+            margin-top: 0;
+            border-radius: 0 0 20px 20px; /* تدوير الحواف السفلية فقط للهيدر */
             margin-bottom: 30px;
         }
 
-        .stat-card-premium {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            border: 1px solid #f1f5f9;
-            transition: transform 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card-premium:hover { transform: translateY(-5px); }
-
-        .stat-card-premium::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
-            background: var(--primary-gradient, #6366f1);
-        }
-
-        .stat-label-modern { color: #64748b; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; }
-        .stat-value-modern { font-size: 1.8rem; font-weight: 800; color: #1e293b; margin-top: 5px; }
-
-        /* Chart Containers */
-        .chart-card {
-            background: white;
-            border-radius: 24px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border: 1px solid #f1f5f9;
+        /* تحسين شكل الـ Sidebar والـ Content */
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: 220px; /* التأكد من أن المسافة مطابقة لعرض الـ Sidebar */
+            }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <div class="dashboard-wrapper">
-        <div class="page-header">
-            <div class="header-title">
-                <h1>Platform Analytics</h1>
-                <p>Real-time overview of your ecosystem performance</p>
+    <div class="dashboard-container animate__animated animate__fadeIn">
+
+        <div class="page-header d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title">Platform Insights</h1>
+                <p class="page-subtitle">Real-time data visualization and ecosystem performance</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-light text-dark shadow-sm p-2 px-3 rounded-pill">
+                    <i class="bi bi-clock-history me-1"></i> Last Update: <span th:text="${#temporals.format(#temporals.createNow(), 'HH:mm')}"></span>
+                </span>
             </div>
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card-premium">
-                <div class="stat-label-modern"><i class="bi bi-rocket-takeoff me-2"></i>Total Projects</div>
-                <div class="stat-value-modern" th:text="${totalProjects}">0</div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-currency-dollar"></i></div>
+                <div class="stat-value" th:text="'$' + ${totalRevenue}">$0</div>
+                <div class="stat-label">Total Revenue</div>
             </div>
-            <div class="stat-card-premium">
-                <div class="stat-label-modern"><i class="bi bi-currency-dollar me-2"></i>Total Raised</div>
-                <div class="stat-value-modern" th:text="${#numbers.formatCurrency(totalRaised)}">$0</div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-people"></i></div>
+                <div class="stat-value" th:text="${activeUsers}">0</div>
+                <div class="stat-label">Total Users</div>
             </div>
-            <div class="stat-card-premium">
-                <div class="stat-label-modern"><i class="bi bi-people me-2"></i>Active Users</div>
-                <div class="stat-value-modern" th:text="${activeUsers}">0</div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-rocket-takeoff"></i></div>
+                <div class="stat-value" th:text="${pendingRequests}">0</div>
+                <div class="stat-label">Pending Approval</div>
             </div>
-            <div class="stat-card-premium">
-                <div class="stat-label-modern"><i class="bi bi-graph-up-arrow me-2"></i>Success Rate</div>
-                <div class="stat-value-modern" th:text="${successRate} + '%'">0%</div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-trophy"></i></div>
+                <div class="stat-value" th:text="${successRate} + '%'">0%</div>
+                <div class="stat-label">Success Rate</div>
             </div>
         </div>
 
-        <div class="row g-4 mb-4">
+        <div class="row g-4">
             <div class="col-lg-8">
-                <div class="chart-card">
-                    <h5 class="mb-4 fw-bold">Growth Trends (Projects vs Funds)</h5>
+                <div class="search-filter-card h-100">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-graph-up-arrow me-2"></i>Financial Growth (Monthly)</h5>
                     <div style="height: 350px;">
-                        <canvas id="lineChart"></canvas>
+                        <canvas id="revenueChart"></canvas>
                     </div>
                 </div>
             </div>
+
             <div class="col-lg-4">
-                <div class="chart-card">
-                    <h5 class="mb-4 fw-bold">Project Distribution</h5>
-                    <div style="height: 350px;">
-                        <canvas id="statusChart"></canvas>
-                    </div>
+                <div class="search-filter-card h-100">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-pie-chart me-2"></i>Project Types</h5>
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="search-filter-card">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-person-plus me-2"></i>New Users</h5>
+                    <canvas id="usersChart"></canvas>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="search-filter-card">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-layers me-2"></i>Project Submissions</h5>
+                    <canvas id="projectsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="search-filter-card">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-check2-circle me-2"></i>System Status</h5>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="search-filter-card">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-bullseye me-2"></i>Engagement Metrics</h5>
+                    <canvas id="radarChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="search-filter-card">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-compass me-2"></i>Contribution Density</h5>
+                    <canvas id="polarChart" style="max-height: 300px;"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
     <script th:inline="javascript">
-        // بنستخدم هيدا الـ Event لنتأكد إنو الـ DOM صار جاهز والـ Chart.js تحملت
+        // التأكد من أن الرسوم تبدأ بعد تحميل الصفحة بالكامل
         document.addEventListener("DOMContentLoaded", function() {
-            try {
-                const projectsData = [[${projectsPerMonth}]] || [];
-                const fundsData = [[${fundsPerMonth}]] || [];
-                const monthsLabels = [[${months}]] || [];
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-                const p = [[${pendingProjects}]] || 0;
-                const a = [[${approvedProjects}]] || 0;
-                const r = [[${rejectedProjects}]] || 0;
+            // سحب البيانات من Thymeleaf
+            const fundsData = /*[[${fundsByMonth}]]*/ [];
+            const usersData = /*[[${usersByMonth}]]*/ [];
+            const projectsData = /*[[${projectsByMonth}]]*/ [];
+            const typeData = /*[[${typeData}]]*/ [];
+            const statusData = /*[[${statusData}]]*/ [];
 
-                // Line Chart
-                const lineCtx = document.getElementById("lineChart").getContext("2d");
-                new Chart(lineCtx, {
-                    type: "line",
-                    data: {
-                        labels: monthsLabels,
-                        datasets: [
-                            {
-                                label: "Projects",
-                                data: projectsData,
-                                borderColor: "#6366f1",
-                                backgroundColor: "rgba(99,102,241,0.1)",
-                                fill: true,
-                                tension: 0.4,
-                                borderWidth: 3,
-                                pointRadius: 4
-                            },
-                            {
-                                label: "Funds ($)",
-                                data: fundsData,
-                                borderColor: "#10b981",
-                                backgroundColor: "rgba(16,185,129,0.1)",
-                                fill: true,
-                                tension: 0.4,
-                                borderWidth: 3,
-                                pointRadius: 4
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: true, position: 'bottom' } },
-                        scales: {
-                            y: { grid: { display: false } },
-                            x: { grid: { display: false } }
-                        }
-                    }
-                });
+            // 1. Revenue Chart
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Funds ($)',
+                        data: fundsData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
 
-                // Status Chart (Doughnut)
-                const statusCtx = document.getElementById("statusChart").getContext("2d");
-                new Chart(statusCtx, {
-                    type: "doughnut",
-                    data: {
-                        labels: ["Pending", "Approved", "Rejected"],
-                        datasets: [{
-                            data: [p, a, r],
-                            backgroundColor: ["#f59e0b", "#10b981", "#ef4444"],
-                            hoverOffset: 15,
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        },
-                        cutout: '70%'
-                    }
-                });
-            } catch (error) {
-                console.error("Chart rendering error:", error);
-            }
+            // 2. Type Chart
+            new Chart(document.getElementById('typeChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Charity', 'Fund', 'Loan'],
+                    datasets: [{
+                        data: typeData,
+                        backgroundColor: ['#f5576c', '#43e97b', '#667eea']
+                    }]
+                }
+            });
+
+            // 3. Users Growth
+            new Chart(document.getElementById('usersChart'), {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'New Registrations',
+                        data: usersData,
+                        backgroundColor: '#a1c4fd'
+                    }]
+                }
+            });
+
+            // 4. Projects Activity
+            new Chart(document.getElementById('projectsChart'), {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Projects',
+                        data: projectsData,
+                        borderColor: '#fa709a',
+                        backgroundColor: 'rgba(250, 112, 154, 0.2)',
+                        fill: true
+                    }]
+                }
+            });
+
+            // 5. Status Chart
+            new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending', 'Approved', 'Completed', 'Rejected'],
+                    datasets: [{
+                        data: statusData,
+                        backgroundColor: ['#ffecd2', '#43e97b', '#667eea', '#fa709a']
+                    }]
+                }
+            });
+
+            // 6. Radar Chart
+            new Chart(document.getElementById('radarChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['Users', 'Funds', 'Projects', 'Likes', 'Comments'],
+                    datasets: [{
+                        label: 'Activity Pulse',
+                        data: [65, 90, 81, 56, 40],
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.2)'
+                    }]
+                }
+            });
+
+            // 7. Polar Chart
+            new Chart(document.getElementById('polarChart'), {
+                type: 'polarArea',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        data: [11, 16, 7, 14],
+                        backgroundColor: ['#667eea', '#f5576c', '#43e97b', '#ffecd2']
+                    }]
+                }
+            });
         });
     </script>
 </div>
+</body>
+</html>

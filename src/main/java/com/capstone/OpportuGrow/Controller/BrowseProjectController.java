@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,48 +44,63 @@ public class BrowseProjectController {
             Model model,
             Principal principal
     ) {
-        // Fetch projects according to filters
         List<Project> projects;
+
+        // منحدد الحالات اللي بدنا نعرضها (بدنا المعروض والمكتمل)
+        List<ProjectStatus> statuses = List.of(ProjectStatus.APPROVED, ProjectStatus.COMPLETED);
+
+
+        // 1. جلب البيانات (الـ Logic تبعك صح بس زدت عليه الترتيب)
         if ((keyword == null || keyword.isEmpty()) && type == null) {
-            projects = projectRepository.findByStatus(ProjectStatus.APPROVED);
+            // بدلاً من findByStatus، نستخدم findByStatusIn
+            projects = projectRepository.findByStatusIn(statuses);
         } else if (keyword != null && !keyword.isEmpty() && type != null) {
-            projects = projectRepository.searchApprovedByType(keyword, type);
+            // يجب أن تدعم هذه الميثود البحث في الحالات المحددة أيضاً
+            projects = projectRepository.findByStatusInAndTypeAndTitleContainingIgnoreCase(statuses, type, keyword);
         } else if (keyword != null && !keyword.isEmpty()) {
-            projects = projectRepository.searchApprovedProjects(keyword);
-        } else { // type != null
-            projects = projectRepository.findByStatusAndType(ProjectStatus.APPROVED, type);
+            projects = projectRepository.findByStatusInAndTitleContainingIgnoreCase(statuses, keyword);
+        } else {
+            projects = projectRepository.findByStatusInAndType(statuses, type);
         }
 
-        // إذا عندك userRepository
-        Optional<User> currentUser = principal != null ? userRepository.findByEmail(principal.getName()) : null;
+        // 2. معالجة البيانات (حساب النسبة والـ Like والحالة)
+        User currentUser = (principal != null) ? userRepository.findByEmail(principal.getName()).orElse(null) : null;
+
         for (Project project : projects) {
-            project.calculateFundingPercent(); // يحسب funding %
-            if (currentUser != null) {
-                project.setLikedByCurrentUser(project.getLikedUsers().contains(currentUser));
-            } else {
-                project.setLikedByCurrentUser(false);
-            }
+            project.calculateFundingPercent();
+
+            // فحص الـ Like بطريقة آمنة
+            project.setLikedByCurrentUser(currentUser != null && project.getLikedUsers().contains(currentUser));
+
+            // ميزة إضافية: فيكي هون تعملي Logic إذا المشروع صار Funded 100%
+            // مثلاً: project.setIsCompleted(project.getRaisedAmount() >= project.getFundingGoal());
         }
 
+        // 3. الترتيب: خلي المشاريع اللي بعدها بحاجة لتمويل تطلع بالأول
+        projects.sort((p1, p2) -> {
+            boolean p1Funded = p1.getRaisedAmount() >= p1.getFundingGoal();
+            boolean p2Funded = p2.getRaisedAmount() >= p2.getFundingGoal();
+            return Boolean.compare(p1Funded, p2Funded);
+        });
 
-        // Pagination
-        int pageSize = 6; // projects per page
+        // 4. الـ Pagination (كودك ممتاز، تركته متل ما هو مع حماية من الـ Empty List)
+        int pageSize = 6;
         int totalProjects = projects.size();
-        int totalPages = (int) Math.ceil((double) totalProjects / pageSize);
-        page = Math.max(1, Math.min(page, totalPages)); // clamp page number
+        int totalPages = (totalProjects == 0) ? 1 : (int) Math.ceil((double) totalProjects / pageSize);
+        page = Math.max(1, Math.min(page, totalPages));
 
         int fromIndex = (page - 1) * pageSize;
         int toIndex = Math.min(fromIndex + pageSize, totalProjects);
 
-        List<Project> pageProjects = projects.subList(fromIndex, toIndex);
-        Page<Project> projectPage = new PageImpl<>(pageProjects, PageRequest.of(page - 1, pageSize), totalProjects);
+        List<Project> pageProjects = (totalProjects > 0) ? projects.subList(fromIndex, toIndex) : new ArrayList<>();
 
-        // Add attributes
+        // 5. إرسال البيانات
         model.addAttribute("projects", pageProjects);
         model.addAttribute("keyword", keyword);
         model.addAttribute("type", type);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
+        model.addAttribute("types", ProjectType.values()); // كرمال الـ Filter Dropdown بالـ HTML
 
         return "projects";
     }

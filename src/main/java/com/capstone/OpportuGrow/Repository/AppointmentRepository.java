@@ -3,6 +3,7 @@ package com.capstone.OpportuGrow.Repository;
 import com.capstone.OpportuGrow.model.Appointment;
 import com.capstone.OpportuGrow.model.Consultant;
 import com.capstone.OpportuGrow.model.Project;
+import com.capstone.OpportuGrow.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +18,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             LocalDate date,
             LocalTime time
     );
+    // الميثود اللي طلبتيها لترتيب المواعيد للمستخدم
+    List<Appointment> findByUserOrderByDateAscTimeAsc(User user);
+
+    // ميثود إضافية ممكن تحتاجيها للمستشار (إذا بدك تعرضي مواعيده كمان)
+    // List<Appointment> findByConsultantOrderByDateAscTimeAsc(Consultant consultant);
 
 
 
